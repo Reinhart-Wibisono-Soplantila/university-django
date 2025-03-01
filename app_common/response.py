@@ -16,3 +16,11 @@ def delete_reponse(message):
         "message":"success delete data",
         "data":None
     }, status=status.HTTP_200_OK)
+
+def options_response():
+    return Response({
+            "status_code":status.HTTP_200_OK,
+            "status":"success",
+            "allow":["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            "message":"These are the allowed methods for this endpoint."
+        })
