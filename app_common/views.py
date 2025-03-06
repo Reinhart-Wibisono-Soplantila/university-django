@@ -18,7 +18,7 @@ class GradeApiView(APIView):
         serializer=GradeSerializer(data=request.data)
         if serializer.is_valid()():
             serializer.save()
-            return success_response(serializer.data, message='success created data')
+            return created_response(serializer.data, message='success created data')
             # return Response({
             #     "status_code":status.HTTP_200_OK,
             #     "status":"success",
@@ -75,7 +75,7 @@ class TermApiView(APIView):
         serializer=TermSerializers(data=request.data)
         if serializer.is_valid()():
             serializer.save()
-            return success_response(serializer.data, message='success created data')
+            return created_response(serializer.data, message='success created data')
         
     def put(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
@@ -110,7 +110,7 @@ class StatusApiView(APIView):
         serializer=StatusSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return success_response(serializer.data, message="success created data")
+            return created_response(serializer.data, message="success created data")
     
     def put(self, request, satatus_id):
         status_obj=get_object_or_404(Status, satatus_id)
