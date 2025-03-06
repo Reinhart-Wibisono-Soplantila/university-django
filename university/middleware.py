@@ -3,7 +3,7 @@ from django.http import JsonResponse
 import traceback
 
 class CustomExceptionMiddleware(MiddlewareMixin):
-    def exception_reponse_global(self, request, exception):
+    def process_exception(self, request, exception):
         print(traceback.format_exc())
         return JsonResponse({
             "status_code":'HTTP_500_INTERNAL SERVER ERROR',

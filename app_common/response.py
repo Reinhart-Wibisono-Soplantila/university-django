@@ -6,7 +6,7 @@ def success_response(serializer, message):
         "status_code":status.HTTP_200_OK,
         "status":"success",
         "message":message,
-        "data":serializer.data
+        "data":serializer
     }, status=status.HTTP_200_OK)
 
 def created_response(serializer, message):
@@ -14,7 +14,7 @@ def created_response(serializer, message):
         "status_code":status.HTTP_201_CREATED,
         "status":"created",
         "message":message,
-        "data":serializer.data
+        "data":serializer
     }, status=status.HTTP_201_CREATED)
 
 def delete_reponse(message):
