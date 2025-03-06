@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Grade, Term, Status
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers
-from .response import success_response, delete_reponse, options_response
+from .response import success_response, delete_reponse, options_response, created_response
 
 # Create your views here.
 class GradeApiView(APIView):
@@ -18,11 +18,11 @@ class GradeApiView(APIView):
         serializer=GradeSerializer(data=request.data)
         if serializer.is_valid()():
             serializer.save()
-            return success_response(serializer.data, message='success insert data')
+            return success_response(serializer.data, message='success created data')
             # return Response({
             #     "status_code":status.HTTP_200_OK,
             #     "status":"success",
-            #     "message":"success insert data",
+            #     "message":"success created data",
             #     "data":serializer.data
             # }, status=status.HTTP_200_OK)
 
@@ -75,7 +75,7 @@ class TermApiView(APIView):
         serializer=TermSerializers(data=request.data)
         if serializer.is_valid()():
             serializer.save()
-            return success_response(serializer.data, message='success insert data')
+            return success_response(serializer.data, message='success created data')
         
     def put(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
@@ -110,7 +110,7 @@ class StatusApiView(APIView):
         serializer=StatusSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return success_response(serializer.data, message="success insert data")
+            return success_response(serializer.data, message="success created data")
     
     def put(self, request, satatus_id):
         status_obj=get_object_or_404(Status, satatus_id)
