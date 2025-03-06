@@ -15,7 +15,7 @@ def delete_reponse(message):
         "status":"success",
         "message":"success delete data",
         "data":None
-    }, status=status.HTTP_200_OK)
+    }, status=status.HTTP_204_NO_CONTENT)
 
 def options_response():
     return Response({
