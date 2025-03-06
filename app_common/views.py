@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Grade, Term, Status
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers
-from .response import success_response, delete_reponse, options_response, created_response
+from university.response import success_response, delete_reponse, options_response, created_response
 
 # Create your views here.
 class GradeApiView(APIView):
