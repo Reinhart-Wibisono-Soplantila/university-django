@@ -31,12 +31,7 @@ class GradeApiView(APIView):
         if serializer.is_valid()():
             serializer.save()
             return success_response(serializer.data, message='success update data')
-            # return Response({
-            #     "status_code":status.HTTP_200_OK,
-            #     "status":"success",
-            #     "message":"success update data",
-            #     "data":serializer.data
-            # }, status=status.HTTP_200_OK)
+        return error_400_response(serializer)
     
     def patch(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
@@ -44,12 +39,7 @@ class GradeApiView(APIView):
         if serializer.is_valid()():
             serializer.save()
             return success_response(serializer.data, message='success update data')
-            # return Response({
-            #     "status_code":status.HTTP_200_OK,
-            #     "status":"success",
-            #     "message":"success update data",
-            #     "data":serializer.data
-            # }, status=status.HTTP_200_OK)
+        return error_400_response(serializer)
     
     def delete(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
@@ -79,13 +69,15 @@ class TermApiView(APIView):
         if serializer.is_valid()():
             serializer.save()
             return created_response(serializer.data, message='success created data')
-        
+        return error_400_response(serializer)
+    
     def put(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
         serializer=TermSerializers(term_obj, data=request.data)
         if serializer.is_valid()():
             serializer.save()
             return success_response(serializer.data, message='success update data')
+        return error_400_response(serializer)
     
     def patch(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
@@ -93,7 +85,8 @@ class TermApiView(APIView):
         if serializer.is_valid()():
             serializer.save()
             return success_response(serializer.data, message='success update data')
-        
+        return error_400_response(serializer)
+    
     def delete(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
         term_obj.delete()
@@ -117,6 +110,7 @@ class StatusApiView(APIView):
         if serializer.is_valid():
             serializer.save()
             return created_response(serializer.data, message="success created data")
+        return error_400_response(serializer)
     
     def put(self, request, satatus_id):
         status_obj=get_object_or_404(Status, satatus_id)
@@ -124,6 +118,7 @@ class StatusApiView(APIView):
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
+        return error_400_response(serializer)
     
     def patch(self, request, satatus_id):
         status_obj=get_object_or_404(Status, satatus_id)
@@ -131,6 +126,7 @@ class StatusApiView(APIView):
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
+        return error_400_response(serializer)
     
     def delete(self, requqest, status_id):
         status_obj=get_object_or_404(Status, status_id)
