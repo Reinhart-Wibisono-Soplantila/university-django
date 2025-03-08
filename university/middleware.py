@@ -7,6 +7,7 @@ class CustomExceptionMiddleware(MiddlewareMixin):
         print(traceback.format_exc())
         return JsonResponse({
             "status_code":'HTTP_500_INTERNAL SERVER ERROR',
+            "status":"error",
             "message": "Internal Server Error", 
             "error": str(exception)
         })

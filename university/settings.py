@@ -18,15 +18,16 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', env('DJANGO_SETTINGS_MODULE', default='university.settings'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('env_secret_key')
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('env_debug')
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
 
@@ -57,6 +58,10 @@ MIDDLEWARE = [
     'university.middleware.CustomExceptionMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER':'university.response.custom_404_exception_handler',
+}
+
 ROOT_URLCONF = 'university.urls'
 
 TEMPLATES = [
@@ -83,12 +88,12 @@ WSGI_APPLICATION = 'university.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': env('env_engine'),
-        'NAME': env('env_name'),
-        'USER': env('env_username'),
-        'PASSWORD': env('env_password'),
-        'HOST': env('env_host'),
-        'PORT': env('env_port')
+        'ENGINE': env('ENGINE'),
+        'NAME': env('NAME'),
+        'USER': env('USER'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('HOST'),
+        'PORT': env('PORT')
     }
 }
 
