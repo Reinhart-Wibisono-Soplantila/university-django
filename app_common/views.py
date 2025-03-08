@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Grade, Term, Status
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers
-from university.response import success_response, delete_reponse, options_response, created_response
+from university.response import success_response, delete_reponse, options_response, created_response, error_400_response
 
 # Create your views here.
 class GradeApiView(APIView):
@@ -20,15 +20,10 @@ class GradeApiView(APIView):
         
     def post(self, request):
         serializer=GradeSerializer(data=request.data)
-        if serializer.is_valid()():
+        if serializer.is_valid():
             serializer.save()
             return created_response(serializer.data, message='success created data')
-            # return Response({
-            #     "status_code":status.HTTP_200_OK,
-            #     "status":"success",
-            #     "message":"success created data",
-            #     "data":serializer.data
-            # }, status=status.HTTP_200_OK)
+        return error_400_response(serializer)
 
     def put(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
