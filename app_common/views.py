@@ -10,8 +10,12 @@ from university.response import success_response, delete_reponse, options_respon
 # Create your views here.
 class GradeApiView(APIView):
     def get(self, request, grade_id=None):
-        grade_obj=Grade.objects.filter(id=grade_id)
-        serializer=GradeSerializer(grade_obj, many=True)
+        if grade_id is not None:
+            grade_obj=get_object_or_404(Grade, id=grade_id)
+            serializer=GradeSerializer(grade_obj)
+        else:
+            grade_obj=Grade.objects.all()
+            serializer=GradeSerializer(grade_obj, many=True)
         return success_response(serializer.data, message='success retrieved data')
         
     def post(self, request):
@@ -67,8 +71,12 @@ class GradeApiView(APIView):
     
 class TermApiView(APIView):
     def get(self, request, term_id=None):
-        term_obj=Term.objects.filter(id=term_id)
-        serializer=TermSerializers(term_obj, many=True)
+        if term_id is not None:
+            term_obj=get_object_or_404(Term, id=term_id)
+            serializer=TermSerializers(term_obj)
+        else:
+            term_obj=Term.objects.all()
+            serializer=TermSerializers(term_obj, many=True)
         return success_response(serializer.data, message='success retrieved data')
     
     def post(self, request):
@@ -101,10 +109,13 @@ class TermApiView(APIView):
     
 class StatusApiView(APIView):
     def get(self, request, status_id=None):
-        status_obj=Status.objects.filter(status_id)
-        serializer=StatusSerializers(status_obj, many=True)
-        if serializer.is_valid():
-            return success_response(serializer.data, message='success retrieved data')
+        if status_id is not None:
+            status_obj=get_object_or_404(Status, status_id)
+            serializer=StatusSerializers(status_obj, many=True)
+        else:
+            status_obj=Status.objects.all()
+            serializer=StatusSerializers(status_obj, many=True)
+        return success_response(serializer.data, message='success retrieved data')
     
     def post(self, request):
         serializer=StatusSerializers(data=request.data)

@@ -16,6 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+
+def custom_404_handler(request, exception):
+    return JsonResponse({
+        "status code":404,
+        'status':'error',
+        "message":'page not found'
+    }, status=404)
+
+handler404=custom_404_handler
 
 urlpatterns = [
     path('admin/', admin.site.urls),
