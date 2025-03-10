@@ -6,12 +6,16 @@ class Term(models.Model):
         (1, "Semester 1"),
         (2, "Semester 2")
     ]
-    term_code=models.CharField(max_length=10, unique=True, db_index=True)
+    term_code=models.CharField(max_length=10, unique=True, db_index=True, editable=False)
     year_start=models.IntegerField()
     year_end=models.IntegerField()
     semester=models.IntegerField(choices=semester_choices)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        self.term_code=f"{self.year_start}{self.semester}"
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.year_start}/{self.year_end}-Semester {self.semester}"

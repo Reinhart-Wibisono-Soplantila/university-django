@@ -59,6 +59,14 @@ def error_400_response(serializer):
         "errors": serializer.errors
     }, status=status.HTTP_400_BAD_REQUEST)
 
+def error_400_integirty_response(message):
+    return Response({
+        "status_code": status.HTTP_400_BAD_REQUEST,
+        "status": "error",
+        "message": message,
+        "errors":{"term_code":[message]}
+    }, status=status.HTTP_400_BAD_REQUEST)
+
 def custom_404_exception_handler(exc, context):
     response=exception_handler(exc, context)
     if isinstance (exc, Http404):

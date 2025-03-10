@@ -1,11 +1,12 @@
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from django.db.utils import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 from .models import Grade, Term, Status
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers
-from university.response import success_response, delete_reponse, options_response, created_response, error_400_response
+from university.response import success_response, delete_reponse, options_response, created_response, error_400_response, error_400_integirty_response
 
 # Create your views here.
 class GradeApiView(APIView):
@@ -28,15 +29,15 @@ class GradeApiView(APIView):
     def put(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         serializer=GradeSerializer(grade_obj, data=request.data)
-        if serializer.is_valid()():
+        if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
     
     def patch(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
-        serializer=GradeSerializer(grade_obj, data=request.data)
-        if serializer.is_valid()():
+        serializer=GradeSerializer(grade_obj, data=request.data, partial=True)
+        if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
@@ -66,15 +67,18 @@ class TermApiView(APIView):
     
     def post(self, request):
         serializer=TermSerializers(data=request.data)
-        if serializer.is_valid()():
-            serializer.save()
-            return created_response(serializer.data, message='success created data')
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return created_response(serializer.data, message='success created data')
+            except IntegrityError:
+                return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
         return error_400_response(serializer)
     
     def put(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
         serializer=TermSerializers(term_obj, data=request.data)
-        if serializer.is_valid()():
+        if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
@@ -82,7 +86,7 @@ class TermApiView(APIView):
     def patch(self, request, term_id):
         term_obj=get_object_or_404(Term, id=term_id)
         serializer=TermSerializers(term_obj, data=request.data)
-        if serializer.is_valid()():
+        if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
