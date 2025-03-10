@@ -103,7 +103,7 @@ class StatusApiView(APIView):
     def get(self, request, status_id=None):
         if status_id is not None:
             status_obj=get_object_or_404(Status, status_id)
-            serializer=StatusSerializers(status_obj, many=True)
+            serializer=StatusSerializers(status_obj)
         else:
             status_obj=Status.objects.all()
             serializer=StatusSerializers(status_obj, many=True)
@@ -116,24 +116,24 @@ class StatusApiView(APIView):
             return created_response(serializer.data, message="success created data")
         return error_400_response(serializer)
     
-    def put(self, request, satatus_id):
-        status_obj=get_object_or_404(Status, satatus_id)
+    def put(self, request, status_id):
+        status_obj=get_object_or_404(Status, id=status_id)
         serializer=StatusSerializers(status_obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
     
-    def patch(self, request, satatus_id):
-        status_obj=get_object_or_404(Status, satatus_id)
-        serializer=StatusSerializers(status_obj, data=request.data)
+    def patch(self, request, status_id):
+        status_obj=get_object_or_404(Status, id=status_id)
+        serializer=StatusSerializers(status_obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
     
     def delete(self, requqest, status_id):
-        status_obj=get_object_or_404(Status, status_id)
+        status_obj=get_object_or_404(Status, id=status_id)
         status_obj.delete()
         return delete_reponse(message='success delete data')
     
