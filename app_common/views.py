@@ -102,7 +102,7 @@ class TermApiView(APIView):
 class StatusApiView(APIView):
     def get(self, request, status_id=None):
         if status_id is not None:
-            status_obj=get_object_or_404(Status, status_id)
+            status_obj=get_object_or_404(Status, id=status_id)
             serializer=StatusSerializers(status_obj)
         else:
             status_obj=Status.objects.all()
