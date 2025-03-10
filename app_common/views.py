@@ -56,9 +56,9 @@ class GradeApiView(APIView):
         return options_response()
     
 class TermApiView(APIView):
-    def get(self, request, term_id=None):
-        if term_id is not None:
-            term_obj=get_object_or_404(Term, id=term_id)
+    def get(self, request, term_code=None):
+        if term_code is not None:
+            term_obj=get_object_or_404(Term, term_code=term_code)
             serializer=TermSerializers(term_obj)
         else:
             term_obj=Term.objects.all()
@@ -75,24 +75,24 @@ class TermApiView(APIView):
                 return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
         return error_400_response(serializer)
     
-    def put(self, request, term_id):
-        term_obj=get_object_or_404(Term, id=term_id)
+    def put(self, request, term_code):
+        term_obj=get_object_or_404(Term, term_code=term_code)
         serializer=TermSerializers(term_obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
     
-    def patch(self, request, term_id):
-        term_obj=get_object_or_404(Term, id=term_id)
-        serializer=TermSerializers(term_obj, data=request.data)
+    def patch(self, request, term_code):
+        term_obj=get_object_or_404(Term, term_code=term_code)
+        serializer=TermSerializers(term_obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return success_response(serializer.data, message='success update data')
         return error_400_response(serializer)
     
-    def delete(self, request, term_id):
-        term_obj=get_object_or_404(Term, id=term_id)
+    def delete(self, request, term_code):
+        term_obj=get_object_or_404(Term, term_code=term_code)
         term_obj.delete()
         return delete_reponse(message='success delete data')
     

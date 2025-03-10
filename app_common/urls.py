@@ -7,7 +7,7 @@ urlpatterns=[
     path('grade/<int:grade_id>', GradeApiView.as_view(), name='specific grade'),
     
     path('term/', TermApiView.as_view(), name="all term"),
-    path('term/<int:term_id>', TermApiView.as_view(), name="specific term"),
+    path('term/<str:term_code>', TermApiView.as_view(), name="specific term"),
     
     path('status/', StatusApiView.as_view(), name="all status"),
     path('status/<int:status_id>', StatusApiView.as_view(), name="specific status"),

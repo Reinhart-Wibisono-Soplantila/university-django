@@ -13,10 +13,6 @@ class Term(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
-    def save(self, *args, **kwargs):
-        self.term_code=f"{self.year_start}{self.semester}"
-        super().save(*args, **kwargs)
-    
     def __str__(self):
         return f"{self.year_start}/{self.year_end}-Semester {self.semester}"
     
