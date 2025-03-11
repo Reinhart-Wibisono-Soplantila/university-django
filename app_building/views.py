@@ -42,3 +42,6 @@ class BuildingApiView(APIView):
         building_obj=get_object_or_404(Building, id=building_id)
         building_obj.delete()
         return delete_reponse(message='success delete data')
+    
+    def options(self, request, *args, **kwargs):
+        return super().options(request, *args, **kwargs)

@@ -53,7 +53,7 @@ class GradeApiView(APIView):
         # }, status=status.HTTP_200_OK)
 
     def options(self, request, *args, **kwargs):
-        return options_response()
+        return super().options(request, *args, **kwargs)
     
 class TermApiView(APIView):
     def get(self, request, term_code=None):
@@ -97,7 +97,7 @@ class TermApiView(APIView):
         return delete_reponse(message='success delete data')
     
     def options(self, request, *args, **kwargs):
-        return options_response()
+        return super().options(request, *args, **kwargs)
     
 class StatusApiView(APIView):
     def get(self, request, status_id=None):
@@ -138,4 +138,4 @@ class StatusApiView(APIView):
         return delete_reponse(message='success delete data')
     
     def options(self, request, *args, **kwargs):
-        return options_response()
+        return super().options(request, *args, **kwargs)
