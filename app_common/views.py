@@ -23,7 +23,7 @@ class GradeApiView(APIView):
         serializer=GradeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return created_response(serializer.data, message='success created data')
+            return created_response(serializer.data, message='success create data')
         return error_400_response(serializer)
 
     def put(self, request, grade_id):
