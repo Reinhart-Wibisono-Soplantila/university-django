@@ -11,6 +11,7 @@ class Room(models.Model):
     capacity=models.IntegerField
 
 class Faculty(models.Model):
+    building=models.ForeignKey(Building, on_delete=models.CASCADE, related_name="faculties")
     faculty_name=models.CharField(max_length=255)
 
 class Department(models.Model):
