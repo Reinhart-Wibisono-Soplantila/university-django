@@ -11,7 +11,7 @@ class BuildingApiView(APIView):
             building_obj=get_object_or_404(Building, id=building_id)
             serializer=BuildingSerializer(building_obj)
         else:
-            bulding_obj=Building.objects.all()
+            building_obj=Building.objects.all()
             serializer=BuildingSerializer(building_obj, many=True)
         return success_response(serializer.data, message='success retrieved data')
     

@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Building(models.Model):
-    budilding_name=models.CharField(max_length=255)
+    building_name=models.CharField(max_length=255)
     address=models.CharField(max_length=255)
 
 class Room(models.Model):
