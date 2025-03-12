@@ -29,5 +29,6 @@ handler404=custom_404_handler
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/common/', include('app_common.urls', namespace='app_common'))
+    path('common/', include('app_common.urls', namespace='app_common')),
+    path('building/', include('app_building', namespace='app_building'))
 ]
