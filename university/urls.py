@@ -30,5 +30,5 @@ handler404=custom_404_handler
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('common/', include('app_common.urls', namespace='app_common')),
-    path('building/', include('app_building', namespace='app_building'))
+    path('building/', include('app_building.urls', namespace='app_building'))
 ]
