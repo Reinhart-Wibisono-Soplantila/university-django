@@ -62,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER':'university.response.custom_404_exception_handler',
+    'EXCEPTION_HANDLER':'university.response.custom_exception_handler'
 }
 
 ROOT_URLCONF = 'university.urls'

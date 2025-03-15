@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Grade, Term, Status, Faculty, Department
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers, FacultySerializer, DepartmentSerializer
-from university.response import success_response, delete_reponse, options_response, created_response, error_400_response, error_400_integirty_response
+from university.response import *
 
 # Create your views here.
 class GradeApiView(APIView):
@@ -21,26 +21,26 @@ class GradeApiView(APIView):
         
     def post(self, request):
         serializer=GradeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return created_response(serializer.data, message='success create data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return created_response(serializer.data, message='success create data')
+        # return error_400_response(serializer)
 
     def put(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         serializer=GradeSerializer(grade_obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
     
     def patch(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         serializer=GradeSerializer(grade_obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
     
     def delete(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
@@ -67,34 +67,40 @@ class TermApiView(APIView):
     
     def post(self, request):
         serializer=TermSerializers(data=request.data)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-                return created_response(serializer.data, message='success created data')
-            except IntegrityError:
-                return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        try:
+            serializer.save()
+            return created_response(serializer.data, message='success created data')
+        except IntegrityError:
+            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        # return error_400_response(serializer)
     
     def put(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
         serializer=TermSerializers(term_obj, data=request.data)
-        if serializer.is_valid():
+        serializer.is_valid(raise_exception=True) 
+        try:
             serializer.save()
             return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        except IntegrityError:
+            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        # return error_400_response(serializer)
     
     def patch(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
         serializer=TermSerializers(term_obj, data=request.data, partial=True)
-        if serializer.is_valid():
+        serializer.is_valid(raise_exception=True) 
+        try:
             serializer.save()
             return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        except IntegrityError:
+            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        # return error_400_response(serializer)
     
     def delete(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
         term_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
@@ -111,26 +117,26 @@ class StatusApiView(APIView):
     
     def post(self, request):
         serializer=StatusSerializers(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return created_response(serializer.data, message="success created data")
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return created_response(serializer.data, message="success created data")
+        # return error_400_response(serializer)
     
     def put(self, request, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
         serializer=StatusSerializers(status_obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
     
     def patch(self, request, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
         serializer=StatusSerializers(status_obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
     
     def delete(self, requqest, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
@@ -152,26 +158,26 @@ class FacultyApiView(APIView):
     
     def post(self, request):
         serializer=FacultySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success create data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success create data')
+        # return error_400_response(serializer)
 
     def put(self, request, faculty_id):
         faculty_obj=get_object_or_404(Faculty, id=faculty_id)
         serializer=FacultySerializer(faculty_obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
         
     def patch(self, request, faculty_id):
         faculty_obj=get_object_or_404(Faculty, id=faculty_id)
         serializer=FacultySerializer(faculty_obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message="success update data")
+        # return error_400_response(serializer)
 
     def delete(self, request, faculty_id):
         faculty_obj=get_object_or_404(Faculty, id=faculty_id)
@@ -193,26 +199,26 @@ class DepartmentApiView(APIView):
     
     def post(self, request):
         serializer=DepartmentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success create data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success create data')
+        # return error_400_response(serializer)
 
     def put(self, request, department_id):
         department_obj=get_object_or_404(Department, id=department_id)
         serializer=DepartmentSerializer(department_obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message='success update data')
+        # return error_400_response(serializer)
         
     def patch(self, request, department_id):
         department_obj=get_object_or_404(Department, id=department_id)
         serializer=DepartmentSerializer(department_obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
-        return error_400_response(serializer)
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
+        return success_response(serializer.data, message="success update data")
+        # return error_400_response(serializer)
 
     def delete(self, request, department_id):
         department_obj=get_object_or_404(Department, id=department_id)
