@@ -11,9 +11,9 @@ class PositionTeachingStaff(models.Model):
 class TeachingStaff(models.Model):
     nip=models.IntegerField(db_index=True, unique=True)
     fullname=models.CharField(max_length=255)
-    position=models.ForeignKey(PositionTeachingStaff, on_delete=models.CASCADE, related_name="teaching_staffs")
-    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="teaching_staffs")
-    department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="teaching_staffs")
+    position=models.ForeignKey(PositionTeachingStaff, on_delete=models.CASCADE, related_name="teaching_staff")
+    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="teaching_staff")
+    department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="teaching_staff")
     areas_of_expertise=models.TextField()
     email=models.EmailField()
     phone_number=PhoneNumberField(unique=True)
