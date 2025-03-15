@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'app_student',
     'app_common',
     'app_building',
+    'app_staff',
     'rest_framework',
     'phonenumber_field'
 ]
