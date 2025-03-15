@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GradeApiView, TermApiView, StatusApiView
+from .views import GradeApiView, TermApiView, StatusApiView, FacultyApiView, DepartmentApiView
 
 app_name='app_common'
 urlpatterns=[
@@ -11,4 +11,10 @@ urlpatterns=[
     
     path('status/', StatusApiView.as_view(), name="all status"),
     path('status/<int:status_id>', StatusApiView.as_view(), name="specific status"),
+        
+    path('faculty/', FacultyApiView.as_view(), name='all_faculty'),
+    path('faculty/<int:faculty_id>', FacultyApiView.as_view(), name='specific_faculty'),
+    
+    path('department/', DepartmentApiView.as_view(), name='all_department'),
+    path('department/<int:department_id>', DepartmentApiView.as_view(), name='specific_department'),
 ]

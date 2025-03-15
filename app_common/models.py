@@ -32,3 +32,13 @@ class Status(models.Model):
     
     def __str__(self):
         return self.status_name
+
+class Faculty(models.Model):
+    faculty_code=models.CharField(max_length=5, db_index=True, unique=True)
+    # building=models.ForeignKey(Building, on_delete=models.CASCADE, related_name="faculties")
+    faculty_name=models.CharField(max_length=255)
+
+class Department(models.Model):
+    department_code=models.CharField(max_length=4, db_index=True, unique=True, editable=False)
+    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="departments")
+    department_name=models.CharField(max_length=255)
