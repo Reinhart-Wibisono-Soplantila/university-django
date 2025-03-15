@@ -18,3 +18,5 @@ class TeachingStaff(models.Model):
     email=models.EmailField()
     phone_number=PhoneNumberField(unique=True)
     address=models.TextField()
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)

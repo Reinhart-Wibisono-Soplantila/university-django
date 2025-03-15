@@ -1,7 +1,6 @@
 from django.db import models
 from app_common.models import Faculty, Department, Status
 from phonenumber_field.modelfields import PhoneNumberField
-from datetime import date
 
 # Create your models here.
 class Student(models.Model):
@@ -15,4 +14,6 @@ class Student(models.Model):
     date_birth=models.DateField()
     email=models.EmailField()
     status=models.ForeignKey(Status, on_delete=models.CASCADE, default=1)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
     
