@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'app_common',
     'app_building',
     'rest_framework',
+    'phonenumber_field'
 ]
 
 MIDDLEWARE = [
