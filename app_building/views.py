@@ -13,7 +13,7 @@ class BuildingApiView(APIView):
         else:
             building_obj=Building.objects.all()
             serializer=BuildingSerializer(building_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=BuildingSerializer(data=request.data)
@@ -54,7 +54,7 @@ class RoomApiView(APIView):
         else:
             room_obj=Room.objects.all()
             serializer=RoomSerializer(room_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=RoomSerializer(data=request.data)

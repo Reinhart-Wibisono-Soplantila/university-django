@@ -17,7 +17,7 @@ class GradeApiView(APIView):
         else:
             grade_obj=Grade.objects.all()
             serializer=GradeSerializer(grade_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
         
     def post(self, request):
         serializer=GradeSerializer(data=request.data)
@@ -63,7 +63,7 @@ class TermApiView(APIView):
         else:
             term_obj=Term.objects.all()
             serializer=TermSerializers(term_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=TermSerializers(data=request.data)
@@ -107,7 +107,7 @@ class StatusApiView(APIView):
         else:
             status_obj=Status.objects.all()
             serializer=StatusSerializers(status_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=StatusSerializers(data=request.data)
@@ -148,7 +148,7 @@ class FacultyApiView(APIView):
         else:
             faculty_obj=Faculty.objects.all()
             serializer=FacultySerializer(faculty_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=FacultySerializer(data=request.data)
@@ -189,7 +189,7 @@ class DepartmentApiView(APIView):
         else:
             department_obj=Department.objects.all()
             serializer=DepartmentSerializer(department_obj, many=True)
-        return success_response(serializer.data, message='success retrieved data')
+        return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=DepartmentSerializer(data=request.data)
