@@ -20,3 +20,14 @@ class TeachingStaff(models.Model):
     address=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+
+class AdministrativeStaff(models.Model):
+    nip=models.IntegerField(db_index=True, unique=True)
+    fullname=models.CharField(max_length=255)
+    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="administrative_staff")
+    department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="administrative_staff")
+    email=models.EmailField()
+    phone_number=PhoneNumberField(unique=True)
+    address=models.TextField()
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
