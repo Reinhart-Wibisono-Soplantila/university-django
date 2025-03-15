@@ -71,8 +71,9 @@ class TermApiView(APIView):
         try:
             serializer.save()
             return created_response(serializer.data, message='success created data')
-        except IntegrityError:
-            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            # return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
         # return error_400_response(serializer)
     
     def put(self, request, term_code):
@@ -82,8 +83,9 @@ class TermApiView(APIView):
         try:
             serializer.save()
             return success_response(serializer.data, message='success update data')
-        except IntegrityError:
-            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            # return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
         # return error_400_response(serializer)
     
     def patch(self, request, term_code):
@@ -93,8 +95,9 @@ class TermApiView(APIView):
         try:
             serializer.save()
             return success_response(serializer.data, message='success update data')
-        except IntegrityError:
-            return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            # return error_400_integirty_response(message="Term code already exists. Please use a different year or semester.")
         # return error_400_response(serializer)
     
     def delete(self, request, term_code):

@@ -1,32 +1,11 @@
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
 
 # Global Response
-# def custom_validation_exception_handler(exc, context):
-#     print("Custom Validation Handler Called!")  # Debugging
-#     response=exception_handler(exc, context)
-#     if isinstance(exc, ValidationError):
-#         return Response({
-#             "status_code": status.HTTP_400_BAD_REQUEST,
-#             "status": "error",
-#             "message": "Validation error",
-#             # "errors": response.data if response else exc.detail
-#         }, status=status.HTTP_400_BAD_REQUEST)
-#     return response
-
-# def custom_404_exception_handler(exc, context):
-#     response=exception_handler(exc, context)
-#     if isinstance (exc, Http404):
-#         return Response({
-#             "status_code":status.HTTP_404_NOT_FOUND,
-#             "status":"error",
-#             "message":"the requested resource was not found"
-#         }, status=status.HTTP_404_NOT_FOUND)
-#     return response
-
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
@@ -47,6 +26,14 @@ def custom_exception_handler(exc, context):
             "status": "error",
             "message": "Validation error",
             "errors": exc.detail if isinstance(exc, ValidationError) else response.data
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    if isinstance(exc, IntegrityError):
+        return Response({
+            "status_code": status.HTTP_400_BAD_REQUEST,
+            "status": "error",
+            "message": "Integrity error: Data violates database constraints",
+            "errors": {"detail": str(exc)}
         }, status=status.HTTP_400_BAD_REQUEST)
         
     return response

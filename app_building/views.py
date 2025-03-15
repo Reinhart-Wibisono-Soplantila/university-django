@@ -20,7 +20,7 @@ class BuildingApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message='success create data')
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
 
     def put(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -28,7 +28,7 @@ class BuildingApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
         
     def patch(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -36,7 +36,7 @@ class BuildingApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message="success update data")
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
 
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -61,7 +61,7 @@ class RoomApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message='success create data')
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
 
     def put(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
@@ -69,7 +69,7 @@ class RoomApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message='success update data')
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
         
     def patch(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
@@ -77,7 +77,7 @@ class RoomApiView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return success_response(serializer.data, message="success update data")
-        return error_400_response(serializer)
+        # return error_400_response(serializer)
 
     def delete(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
