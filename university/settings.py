@@ -41,9 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app_building',
     'app_student',
     'app_common',
-    'app_building',
+    'app_course',
     'app_staff',
     'rest_framework',
     'phonenumber_field'
