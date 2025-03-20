@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from .models import Course, CourseType
 
-class CourseSerializer(serializers):
+class CourseSerializer(serializers.ModelSerializer):
     class Meta:
-        model='Course'
-        fields="__all__"
+        model=Course
+        fields='__all__'
 
-class CourseTypeSerializer(serializers):
+class CourseTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model='CourseType'
+        model=CourseType
         fields='__all__'
