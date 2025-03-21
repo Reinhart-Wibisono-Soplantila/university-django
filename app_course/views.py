@@ -34,7 +34,7 @@ class CourseTypeApiView(APIView):
         except IntegrityError as e:
             raise ValidationError({"detail": "Integrity error: " + str(e)})
         
-    def put(self, request, coursetype_id):
+    def patch(self, request, coursetype_id):
         coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
         serializer=CourseTypeSerializer(coursetype_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -47,6 +47,51 @@ class CourseTypeApiView(APIView):
     def delete(self, request, coursetype_id):
         coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
         coursetype_obj.delete()
+        return delete_reponse()
+    
+    def options(self, request, *args, **kwargs):
+        return super().options(request, *args, **kwargs)
+
+class CourseApiView(APIView):
+    def get(self, request, course_id=None):
+        if course_id is not None:
+            course_obj=get_object_or_404(Course, course_id=course_id)
+            serializer=CourseSerializer(course_obj)
+        else:
+            course_obj=Course.objects.all()
+            serializer=CourseSerializer(course_obj, many=True)
+        return success_response(serializer.data, message='success retrive data')
+    
+    def post(self, request):
+        serializer=CourseSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success create data")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+    
+    def put(self, request, course_id):
+        course_obj=get_object_or_404(Course, course_id=course_id)
+        serializer=CourseSerializer(course_obj, data=request.data)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+        
+    def patch(self, request, course_id):
+        course_obj=get_object_or_404(Course, course_id=course_id)
+        serializer=CourseSerializer(course_obj, data=request.data, partial=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
+    
+    def delete(self, request, course_id):
+        course_obj=get_object_or_404(Course, course_id=course_id)
+        course_obj.delete()
         return delete_reponse()
     
     def options(self, request, *args, **kwargs):
