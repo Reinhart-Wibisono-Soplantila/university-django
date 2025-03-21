@@ -32,5 +32,6 @@ urlpatterns = [
     path('common/', include('app_common.urls', namespace='app_common')),
     path('building/', include('app_building.urls', namespace='app_building')),
     path('student/', include('app_student.urls', namespace='app_student')),
-    path('staff/', include('app_staff.urls', namespace='app_staff'))
+    path('staff/', include('app_staff.urls', namespace='app_staff')),
+    path('course/', include('app_course.urls', namespace='app_course'))
 ]
