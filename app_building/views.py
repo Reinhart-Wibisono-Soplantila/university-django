@@ -18,25 +18,31 @@ class BuildingApiView(APIView):
     def post(self, request):
         serializer=BuildingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message='success create data')
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message='success create data')
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
 
     def put(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message='success update data')
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message='success update data')
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
         
     def patch(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message="success update data")
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
 
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -59,25 +65,31 @@ class RoomApiView(APIView):
     def post(self, request):
         serializer=RoomSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message='success create data')
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message='success create data')
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
 
     def put(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message='success update data')
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message='success update data')
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
         
     def patch(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return success_response(serializer.data, message="success update data")
-        # return error_400_response(serializer)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise ValidationError({"detail": "Integrity error: " + str(e)})
 
     def delete(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
