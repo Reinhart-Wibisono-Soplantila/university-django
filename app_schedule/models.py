@@ -3,6 +3,7 @@ from django.db.models import F
 from app_course.models import Course
 from app_building.models import Building, Room
 from app_staff.models import TeachingStaff
+
 # Create your models here.
 class Schedule(models.Model):
     semester_choices=[
@@ -21,7 +22,7 @@ class Schedule(models.Model):
     room=models.ForeignKey(Room, on_delete=models.CASCADE, related_name='schedules')
     teaching_staff=models.ForeignKey(TeachingStaff, on_delete=models.CASCADE, related_name='schedules')
     max_quota=models.IntegerField()
-    remaining_quota=models.IntegerField()
+    remaining_quota=models.IntegerField(default=0)
     registered_quota=models.IntegerField(default=0)
     date_held=models.DateField()
     time_start=models.TimeField()
@@ -29,14 +30,16 @@ class Schedule(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
-    def decrease_qouta(self):
+    def decrease_quota(self):
         with transaction.atomic():
             updated_rows=Schedule.objects.filter(
                 id=self.id, remaining_quota__gt=0).update(
                 registered_quota=F('registered_quota')+1,
                 remaining_quota=F('remaining_quota')-1
             )
-            return {"success": updated_rows > 0, "message": "Success Registered." if updated_rows > 0 else "Quota full!"}
+            return {
+                "success": bool(updated_rows), 
+                "message": "Success Registered." if updated_rows > 0 else "Quota full!"}
     
     def increase_quota(self):
         with transaction.atomic():
@@ -45,4 +48,11 @@ class Schedule(models.Model):
                 registered_quota=F('registered_quota')-1,
                 remaining_quota=F('remaining_quota')+1
             )
-            return {"success": updated_rows > 0, "message": "Success Cancel Course." if updated_rows > 0 else "Cannot Cancel Course"}
+            return {
+                "success": bool(updated_rows), 
+                "message": "Success Cancel Course." if updated_rows > 0 else "Cannot Cancel Course"}
+    
+    def save(self, *args, **kwargs):
+        if self.pk is None:  # Hanya pertama kali dibuat
+            self.remaining_quota = self.max_quota
+        super().save(*args, **kwargs)
