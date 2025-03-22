@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'app_common',
     'app_course',
     'app_staff',
+    'app_schedule',
     'rest_framework',
     'phonenumber_field'
 ]
