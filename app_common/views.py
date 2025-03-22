@@ -51,7 +51,7 @@ class GradeApiView(APIView):
     def delete(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         grade_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
         # return Response({
         #     "status_code":status.HTTP_200_OK,
         #     "status":"success",
@@ -150,7 +150,7 @@ class StatusApiView(APIView):
     def delete(self, requqest, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
         status_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
@@ -197,7 +197,7 @@ class FacultyApiView(APIView):
     def delete(self, request, faculty_id):
         faculty_obj=get_object_or_404(Faculty, id=faculty_id)
         faculty_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
@@ -244,7 +244,7 @@ class DepartmentApiView(APIView):
     def delete(self, request, department_id):
         department_obj=get_object_or_404(Department, id=department_id)
         department_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
