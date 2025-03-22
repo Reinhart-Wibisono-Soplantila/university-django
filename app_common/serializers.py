@@ -22,7 +22,6 @@ class TermSerializers(serializers.ModelSerializer):
             if Term.objects.filter(term_code=term_code).exists():
                 raise serializers.ValidationError({"term_code": "Term code already exists. Please use a different year or semester."})
             data["term_code"] = term_code
-
         return data
     
     def create(self, validated_data):
