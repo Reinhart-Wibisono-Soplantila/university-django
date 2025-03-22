@@ -6,11 +6,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Schedule
-        fields = '__all__'  # Atau bisa spesifik sesuai kebutuhan
-        read_only_fields = ['remaining_quota', 'registered_quota']  # Ini hanya diubah lewat fungsi di model
+        fields = '__all__'  
+        read_only_fields = ['remaining_quota', 'registered_quota']
 
     def validate(self, data):
-        """Validasi khusus jika diperlukan, misalnya memastikan remaining_quota >= 0"""
         if 'remaining_quota' in data and data['remaining_quota'] < 0:
             raise serializers.ValidationError({"remaining_quota": "Remaining quota tidak boleh negatif."})
         return data
