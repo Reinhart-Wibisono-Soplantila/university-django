@@ -21,14 +21,14 @@ class Student(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.nim:
-           faculty_code=self.faculty.faculty_code
-           department_code=self.department.id
-           year=str(self.registration_year)[-2:]
-           last_student=Student.objects.filter(registration_year=self.registration_year, department=self.department).order_by('-nim').first()
-        if last_student:
-            student_number=int(last_student.nim[-3:])+1
-        else:
-            student_number=1
-        self.nim=f'{faculty_code}{department_code}1{year}1{student_number:03d}'
+            faculty_code=self.faculty.faculty_code
+            department_code=self.department.id
+            year=str(self.registration_year)[-2:]
+            last_student=Student.objects.filter(registration_year=self.registration_year, department=self.department).order_by('-nim').first()
+            if last_student:
+                student_number=int(last_student.nim[-3:])+1
+            else:
+                student_number=1
+            self.nim=f'{faculty_code}{department_code}1{year}1{student_number:03d}'
         super().save(*args, **kwargs)
         
