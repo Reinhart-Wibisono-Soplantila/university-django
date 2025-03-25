@@ -29,6 +29,6 @@ class Student(models.Model):
                 student_number=int(last_student.nim[-3:])+1
             else:
                 student_number=1
-            self.nim=f'{faculty_code}{department_code}1{year}1{student_number:03d}'
+            self.nim=f'{faculty_code}{department_code:02d}1{year}1{student_number:03d}'
         super().save(*args, **kwargs)
         

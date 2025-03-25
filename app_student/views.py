@@ -47,7 +47,7 @@ class StudentAPIView(APIView):
     def delete(self, request, student_nim):
         student_obj=get_object_or_404(Student, nim=student_nim)
         student_obj.delete()
-        return delete_reponse(message="success delete data")
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)

@@ -19,9 +19,9 @@ class StudentSerializer(serializers.ModelSerializer):
         year=str(registration_year)[-2:] if registration_year!=instance.registration_year else str(instance.registration_year)[-2:]
         
         if registration_year!=instance.registration_year or department!=instance.department:
-            last_student=Student.objects.filter(registration_year=instance.registration_year, department=instance.department).order_by('-nim').first()
+            last_student=Student.objects.filter(registration_year=registration_year, department=department).order_by('-nim').first()
             student_number=int(last_student.nim[-3:])+1 if last_student else 1
-            instance.nim=f'{faculty_code}{department_code}1{year}1{student_number:03d}'
+            instance.nim=f'{faculty_code}{department_code:02d}1{year}1{student_number:03d}'
         
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
