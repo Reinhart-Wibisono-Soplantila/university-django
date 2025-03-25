@@ -47,7 +47,7 @@ class BuildingApiView(APIView):
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         building_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
@@ -94,7 +94,7 @@ class RoomApiView(APIView):
     def delete(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         room_obj.delete()
-        return delete_reponse(message='success delete data')
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)

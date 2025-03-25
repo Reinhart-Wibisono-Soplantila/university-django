@@ -13,14 +13,14 @@ class StudentAPIView(APIView):
         else:
             student_obj=Student.objects.all()
             serializer=StudentSerializer(student_obj, many=True)
-        return success_response(serializer, message="success retrive data")
+        return success_response(serializer.data, message="success retrive data")
     
     def post(self, request):
         serializer=StudentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-            return success_response(serializer, message="success create data")
+            return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             raise ValidationError({"detail": "Integrity error: " + str(e)})
     
@@ -30,7 +30,7 @@ class StudentAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-            return success_response(serializer, message="success update data")
+            return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             raise ValidationError({"detail": "Integrity error: " + str(e)})
     
@@ -40,7 +40,7 @@ class StudentAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-            return success_response(serializer, message="success update data")
+            return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             raise ValidationError({"detail": "Integrity error: " + str(e)})
     
