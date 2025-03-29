@@ -9,6 +9,9 @@ class Student(models.Model):
     faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="student_faculty")
     department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="student_department")
     registration_year = models.IntegerField(default=now().year)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    
     
     def save(self, *args, **kwargs):
         if not self.nim:
@@ -24,6 +27,7 @@ class Student(models.Model):
         super().save(*args, **kwargs)
 
 class StudentProfile(models.Model):
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, editable=False)
     fullname=models.CharField(max_length=255)
     phone_number=PhoneNumberField()
     address=models.TextField()
