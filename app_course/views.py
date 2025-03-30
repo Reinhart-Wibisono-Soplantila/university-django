@@ -11,7 +11,7 @@ class CourseTypeApiView(APIView):
             coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
             serializer=CourseTypeSerializer(coursetype_obj)
         else:
-            coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
+            coursetype_obj=CourseType.objects.all()
             serializer=CourseTypeSerializer(coursetype_obj, many=True)
         return success_response(serializer.data, message='success retrive data')
     

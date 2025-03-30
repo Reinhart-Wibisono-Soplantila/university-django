@@ -11,7 +11,6 @@ def custom_exception_handler(exc, context):
 
     # Menangani 404
     if isinstance(exc, Http404):
-        print('4044444')
         return Response({
             "status_code": status.HTTP_404_NOT_FOUND,
             "status": "error",
@@ -20,7 +19,6 @@ def custom_exception_handler(exc, context):
 
     # Menangani 400 ValidationError
     if isinstance(exc, ValidationError) or (response is not None and response.status_code == 400):
-        print('400 Validation Error Detected')
         return Response({
             "status_code": status.HTTP_400_BAD_REQUEST,
             "status": "error",
