@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Schedule
+from .models import Schedule, RegisteredSchedule
+from app_common.models import Term
 
 class ScheduleSerializer(serializers.ModelSerializer):
     semester_pack_display = serializers.CharField(source='get_semester_pack_display', read_only=True)
@@ -31,4 +32,27 @@ class ScheduleSerializer(serializers.ModelSerializer):
         if max_quota!=instance.max_quota:
             validated_data['remaining_quota']=max_quota-instance.registered_quota
 
+        return super().update(instance, validated_data)
+    
+class RegisterScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=RegisteredSchedule
+        fields=['student', 'schedule']
+        read_only_fields=['term']
+    
+    def create(self, validated_data):
+        term=Term.objects.get(is_activate=1).term_code
+        validated_data['term']=term
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        old_schedules=set(instance.schedule.all())
+        new_schedules=set(validated_data.get('schedule'))
+        if not old_schedules==new_schedules:
+            to_add = new_schedules - old_schedules
+            to_remove = old_schedules - new_schedules
+            if to_add:
+                instance.schedule.add(*to_add)
+            if to_remove:
+                instance.schedule.remove(*to_remove)
         return super().update(instance, validated_data)

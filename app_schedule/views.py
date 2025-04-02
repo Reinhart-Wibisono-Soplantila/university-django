@@ -47,7 +47,7 @@ class ScheduleApiView(APIView):
     def delete(self, request, schedule_id):
         schedule_obj=get_object_or_404(Schedule, id=schedule_id)
         schedule_obj.delete()
-        return delete_reponse
+        return delete_reponse()
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)

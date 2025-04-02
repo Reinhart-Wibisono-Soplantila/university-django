@@ -10,6 +10,7 @@ class Term(models.Model):
     year_start=models.IntegerField()
     year_end=models.IntegerField()
     semester=models.IntegerField(choices=semester_choices)
+    is_active=models.IntegerField(default=0, choices=[(0, "Inactive"), (1, "Active")])
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
