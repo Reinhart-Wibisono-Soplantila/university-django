@@ -39,7 +39,10 @@ class Schedule(models.Model):
             self.remaining_quota = self.max_quota
         super().save(*args, **kwargs)
         # redis_client.set(self.get_redis_key(), self.remaining_quota, ex=60)
-        
+    
+    def __str__(self):
+        return f"{self.id}-{self.course}"
+    
 class RegisteredSchedule(models.Model):
     student=models.ForeignKey(Student, on_delete=models.CASCADE, related_name="register_schedule")
     schedule=models.ManyToManyField(Schedule, related_name="register_schedule")
@@ -79,3 +82,6 @@ class RegisteredSchedule(models.Model):
             )
         
         cache.set(cache_key, list(new_schedules), timeout=300)
+        
+    def __str__(self):
+        return f"{self.id}-{self.student.nim}"

@@ -40,6 +40,10 @@ class Faculty(models.Model):
     faculty_name=models.CharField(max_length=255)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.faculty_name
+    
 
 class Department(models.Model):
     department_code=models.CharField(max_length=4, db_index=True, unique=True, editable=False)
@@ -47,3 +51,6 @@ class Department(models.Model):
     department_name=models.CharField(max_length=255)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.department_name

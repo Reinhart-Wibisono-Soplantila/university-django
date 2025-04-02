@@ -10,6 +10,9 @@ class CourseType(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
+    def __str__(self):
+        return self.type
+    
 class Course(models.Model):
     course_id=models.CharField(max_length=30, db_index=True, editable=False, unique=True)
     course_name=models.CharField(max_length=255)
@@ -34,4 +37,7 @@ class Course(models.Model):
             
             self.course_id=f"{faculty}{department:02d}1{year}1{last_number:04d}"
         super().save(*args, **kwargs) # Call the real save() method
+    
+    def __str__(self):
+        return self.course_name
         

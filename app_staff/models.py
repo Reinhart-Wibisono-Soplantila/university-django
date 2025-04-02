@@ -7,12 +7,18 @@ class PositionTeachingStaff(models.Model):
     position_name=models.CharField(max_length=30, unique=True, db_index=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.position_name
 
 class AreaOfExpertise(models.Model):
     expertise_field=models.CharField(max_length=100, unique=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.expertise_field
+    
 class TeachingStaff(models.Model):
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     fullname=models.CharField(max_length=255)
@@ -26,6 +32,9 @@ class TeachingStaff(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"{self.nip}-{self.fullname}"
+    
 class AdministrativeStaff(models.Model):
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     fullname=models.CharField(max_length=255)
@@ -36,3 +45,6 @@ class AdministrativeStaff(models.Model):
     address=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.nip}-{self.fullname}"
