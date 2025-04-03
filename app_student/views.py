@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from .models import Student, StudentProfile
 from .serializers import StudentSerializer, StudentProfileSerializer
+from app_common.models import Faculty, Department
 from university.response import *
+from dal import autocomplete
 
 # Create your views here.
 class StudentAPIView(APIView):
@@ -101,3 +103,28 @@ class StudentProfileApiView(APIView):
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
+    
+
+
+
+class FacultyAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Faculty.objects.all()
+        print(qs)
+        if self.q:
+            qs = qs.filter(faculty_name__icontains=self.q)
+
+        return qs
+    
+class DepartmentAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        faculty_id = self.forwarded.get('faculty', None)  # Dapatkan faculty_id dari form
+        qs = Department.objects.all()
+        
+        if faculty_id:
+            qs = qs.filter(faculty_id=faculty_id)  # Filter department berdasarkan faculty
+        
+        if self.q:
+            qs = qs.filter(department_name__icontains=self.q)
+        
+        return qs
