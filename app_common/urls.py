@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GradeApiView, TermApiView, StatusApiView, FacultyApiView, DepartmentApiView
+from .views import *
 
 app_name='app_common'
 urlpatterns=[
@@ -17,4 +17,10 @@ urlpatterns=[
     
     path('department/', DepartmentApiView.as_view(), name='all_department'),
     path('department/<int:department_id>', DepartmentApiView.as_view(), name='specific_department'),
+    
+    path('education-level/', EducationLevelApiView.as_view(), name='all_educationlevel'),
+    path('education-level/<int:edulevel_id>', EducationLevelApiView.as_view(), name='specific_educationlevel'),
+    
+    path('academic-program/', AcademicProgramApiView.as_view(), name='all_academicprogram'),
+    path('academic-program/<int:program_id>', AcademicProgramApiView.as_view(), name='specific_academicprogram'),
 ]

@@ -6,6 +6,7 @@ class Building(models.Model):
     building_name=models.CharField(max_length=255)
     faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="buildings", blank=True, null=True)
     address=models.CharField(max_length=255)
+    is_public=models.IntegerField(choices=[(1, 'Public'), (0, 'Non Public')])
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     

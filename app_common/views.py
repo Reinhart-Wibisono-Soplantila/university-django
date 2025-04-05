@@ -294,3 +294,50 @@ class EducationLevelApiView(APIView):
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
+    
+class AcademicProgramApiView(APIView):
+    def get(self, request, program_id=None):
+        if program_id is not None:
+            program_obj=get_object_or_404(AcademicProgram, id=program_id)
+            serializer=AcademicProgramSerializer(program_obj)
+        else:
+            program_obj=AcademicProgram.objects.all()
+            serializer=AcademicProgramSerializer(program_obj, many=True)
+        return success_response(serializer.data, message="success retrieve all data")
+    
+    def post(self, request):
+        serializer=AcademicProgramSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success create data")
+        except IntegrityError as e:
+            raise serializers.ValidationError({"Integrity error": str(e)})
+    
+    def put(self, request, program_id):
+        program_obj=get_object_or_404(AcademicProgram, id=program_id)
+        serializer=AcademicProgramSerializer(program_obj, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise serializers.ValidationError({"Integrity error": str(e)})
+    
+    def patch(self, request, program_id):
+        program_obj=get_object_or_404(AcademicProgram, id=program_id)
+        serializer=AcademicProgramSerializer(program_obj, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            raise serializers.ValidationError({"Integrity error": str(e)})
+        
+    def delete(self, request, program_id):
+        program_obj=get_object_or_404(AcademicProgram, id=program_id)
+        program_obj.delete()
+        return delete_reponse()
+    
+    def options(self, request, *args, **kwargs):
+        return super().options(request, *args, **kwargs)

@@ -29,9 +29,11 @@ class Grade(models.Model):
 class EducationLevel(models.Model):
     education_name=models.CharField(max_length=20)
     foreign_name=models.CharField(max_length=20)
-    abbreviation=models.CharField(max_length=5)
+    abbreviation=models.CharField(max_length=5,  db_index=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.abbreviation
 
 class Status(models.Model):
     status_name=models.CharField(max_length=100, unique=True)
@@ -61,3 +63,15 @@ class Department(models.Model):
     
     def __str__(self):
         return self.department_name
+    
+class AcademicProgram(models.Model):
+    academic_program_code=models.CharField(max_length=15, db_index=True, unique=True, editable=False)
+    academic_program_name=models.CharField(max_length=255)
+    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="academic_program")
+    # department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name='academic_program')
+    education_level=models.ForeignKey(EducationLevel, on_delete=models.CASCADE, related_name="academic_program")
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.academic_program_name

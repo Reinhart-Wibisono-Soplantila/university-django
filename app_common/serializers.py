@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Term, Grade, Status, Faculty, Department, EducationLevel
+from .models import Term, Grade, Status, Faculty, Department, EducationLevel, AcademicProgram
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,4 +105,57 @@ class DepartmentSerializer(serializers.ModelSerializer):
                 new_number=1
             department_code=f"{faculty_code}{new_number:03d}"
             validated_data['department_code']=department_code
+        return super().update(instance, validated_data)
+
+class AcademicProgramSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AcademicProgram
+        fields='__all__'
+    
+    def create(self, validated_data):
+        faculty=validated_data['faculty']
+        faculty_code=faculty.faculty_code
+        # department=validated_data['department']
+        # department_code=department.department_code
+        education_level=validated_data['education_level']
+        last_program=AcademicProgram.objects.filter(faculty=faculty, education_level=education_level).order_by('-academic_program_code').first()
+        if last_program is not None:
+            las_number=int(last_program.academic_program_code[-3:])
+            new_number=las_number+1
+        else:
+            new_number=1
+        education_level=education_level.abbreviation
+        if education_level=='S1':
+            education_level_code=1
+        elif education_level=='S2':
+            education_level_code=2
+        elif education_level=='S3':
+            education_level_code=3
+        elif education_level=='S4':
+            education_level_code=4
+        academic_program_code=f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
+        validated_data['academic_program_code']=academic_program_code
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        faculty = validated_data.get('faculty', instance.faculty)
+        education_level = validated_data.get('education_level', instance.education_level)
+        if faculty!=instance.faculty  or education_level!=instance.education_level:
+            last_program=AcademicProgram.objects.filter(faculty=faculty, education_level=education_level).order_by('-academic_program_code').first()
+            if last_program is not None:
+                las_number=int(last_program.academic_program_code[-3:])
+                new_number=las_number+1
+            else:
+                new_number=1
+            
+            faculty_code=faculty.faculty_code
+            education_level=education_level.abbreviation
+            if education_level=='S1':
+                education_level_code=1
+            elif education_level=='S2':
+                education_level_code=2
+            elif education_level=='S3':
+                education_level_code=3
+            academic_program_code=f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
+            validated_data['academic_program_code']=academic_program_code
         return super().update(instance, validated_data)
