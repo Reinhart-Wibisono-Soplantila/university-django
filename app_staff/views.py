@@ -22,7 +22,7 @@ class TeachingPositionApiView(APIView):
             serializer.save()
             return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
         
     def put(self, request, position_id):
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
@@ -32,7 +32,7 @@ class TeachingPositionApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
         
     # def patch(self, request, position_id):
     #     position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
@@ -42,7 +42,7 @@ class TeachingPositionApiView(APIView):
     #         serializer.save()
     #         return success_response(serializer.data, message='success update data')
     #     except IntegrityError as e:
-    #         raise ValidationError({"detail": "Integrity error: " + str(e)})
+    #         raise serializer.ValidationError({"Integrity error": str(e)})
     
     def delete(self, request, position_id):
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
@@ -69,7 +69,7 @@ class TeachingStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def put(self, request, nip):
         teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
@@ -79,7 +79,7 @@ class TeachingStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
         
     def patch(self, request, nip):
         teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
@@ -89,7 +89,7 @@ class TeachingStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def delete(self, request, nip):
         teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
@@ -117,7 +117,7 @@ class AdministrativeStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def put(self, request, nip):
         administrative_obj=get_object_or_404(AdministrativeStaff, nip=nip)
@@ -127,7 +127,7 @@ class AdministrativeStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
         
     def patch(self, request, nip):
         administrative_obj=get_object_or_404(AdministrativeStaff, nip=nip)
@@ -137,7 +137,7 @@ class AdministrativeStaffApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def delete(self, request, nip):
         administrative_obj=get_object_or_404(AdministrativeStaff, nip=nip)
@@ -164,7 +164,7 @@ class ExpertiseApiView(APIView):
             serializer.save()
             return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def put(self, request, expertise_id):
         expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
@@ -174,7 +174,7 @@ class ExpertiseApiView(APIView):
             serializer.save()
             return created_response(serializer.data, message="success created data")
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializer.ValidationError({"Integrity error": str(e)})
     
     def delete(self, request, expertise_id):
         expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)

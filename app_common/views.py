@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.db.utils import IntegrityError
+from rest_framework import serializers
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from .models import Grade, Term, Status, Faculty, Department
 from .serializers import GradeSerializer, TermSerializers, StatusSerializers, FacultySerializer, DepartmentSerializer
 from university.response import *
@@ -78,7 +77,7 @@ class TermApiView(APIView):
             serializer.save()
             return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializers.ValidationError({"Integrity error": str(e)})
     
     def put(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
@@ -88,7 +87,7 @@ class TermApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializers.ValidationError({"Integrity error": str(e)})
     
     def patch(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
@@ -98,7 +97,7 @@ class TermApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
-            raise ValidationError({"detail": "Integrity error: " + str(e)})
+            raise serializers.ValidationError({"Integrity error": str(e)})
     
     def delete(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)

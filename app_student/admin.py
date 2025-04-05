@@ -7,7 +7,19 @@ from .forms import StudentForm
 class StudentAdmin(admin.ModelAdmin):
     form = StudentForm
     list_display=['nim', 'faculty', 'department', 'registration_year']
+    search_fields=['nim']
+    list_filter=['faculty']
+    ordering=['nim']
     # autocomplete_fields = ['faculty']
+
+@admin.register(StudentProfile)
+class STudentProfileAdmin(admin.ModelAdmin):
+    list_display=['get_nim', 'fullname', 'email', 'status']
+    search_fields=['nim']
+    list_filter=['status']
     
-admin.site.register(StudentProfile)
+    def get_nim(self, obj):
+        return obj.student.nim
+    get_nim.admin_order_field='student__nim'
+    get_nim.short_description = 'NIM'
 admin.site.register(StudentResult)

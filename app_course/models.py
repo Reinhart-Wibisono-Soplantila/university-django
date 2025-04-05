@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from app_staff.models import TeachingStaff
-from app_common.models import Department
+from app_common.models import Department, Faculty
 
 # Create your models here.
 class CourseType(models.Model):
@@ -19,10 +18,11 @@ class Course(models.Model):
     foreign_name=models.CharField(max_length=255)
     type=models.ForeignKey(CourseType, on_delete=models.CASCADE, related_name='courses')
     sks=models.IntegerField()
+    faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='course')
     department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name='courses')
-    is_course_public=models.IntegerField(default=1, choices=[(0, "Non Public"), (1, "Public")])
+    is_course_public=models.IntegerField(default=0, choices=[(0, "Non Public"), (1, "Public")])
     is_active=models.IntegerField(default=1, choices=[(0, "Inactive"), (1, "Active")])
-    educational_level=models.IntegerField(choices=[(0, "S1"), (1, "S2"), (2, "S3")])
+    level=models.IntegerField(choices=[(0, "S1"), (1, "S2"), (2, "S3")])
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     

@@ -18,18 +18,20 @@ class TermSerializers(serializers.ModelSerializer):
         
         if year_start is not None:
             data['year_end']=year_start+1
-            term_code=f"{year_start}{semester}"
+            term_code=f"{year_start}{semester}"            
             if Term.objects.filter(term_code=term_code).exists():
-                raise serializers.ValidationError({"term_code": "Term code already exists. Please use a different year or semester."})
+                raise serializers.ValidationError({"year_start": "Year or semester already exist. Please use a different year or semester."})
+            
             data["term_code"] = term_code
         return data
     
     def validate_is_active(self, value):
         any_active_term=Term.objects.filter(is_active=1).count()
         if any_active_term>1 and value==1:
-            raise serializers.ValidationError({"is_active": "There is already actived term."})
-        if not any_active_term==0 and value==0:
-            raise serializers.ValidationError({"is_active": "There must be one active term."})
+            raise serializers.ValidationError("There is only one active term.")
+        if any_active_term==0 and value==0:
+            raise serializers.ValidationError("There must be one active term.")
+        return value
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -42,18 +44,19 @@ class TermSerializers(serializers.ModelSerializer):
         if Term.objects.exclude(id=instance.id).filter(term_code=instance.term_code).exists():
             raise serializers.ValidationError({"term_code": "Term code already exists. Please use a different year or semester."})
 
-        is_activate=validated_data.get("is_active", instance.is_activate)
-        if is_activate==1:
-            Term.objects.exclude(id=instance.id).update(is_active=0)
-        elif is_activate==0:
-            if not Term.objects.filter(is_active=1).exists():
-                raise serializers.ValidationError({"is_active": "There must be one active term."})
+        is_active=validated_data.get("is_active")
+        if is_active!=instance.is_active:
+            if is_active==1:
+                Term.objects.exclude(id=instance.id).update(is_active=0)
+            elif is_active==0:
+                if not Term.objects.filter(is_active=1).exists():
+                    raise serializers.ValidationError("There must be one active term.")
             
         instance.year_start = year_start
         instance.year_end = year_start + 1
         instance.semester = semester
         instance.term_code = f"{year_start}{semester}"
-        instance.is_active = is_activate
+        instance.is_active = is_active
         instance.save()
         return instance
 

@@ -23,7 +23,7 @@ def custom_exception_handler(exc, context):
             "status_code": status.HTTP_400_BAD_REQUEST,
             "status": "error",
             "message": "Validation error",
-            "errors": exc.detail if isinstance(exc, ValidationError) else response.data
+            "errors": exc if isinstance(exc, ValidationError) else response.data
         }, status=status.HTTP_400_BAD_REQUEST)
         
     if isinstance(exc, IntegrityError):
