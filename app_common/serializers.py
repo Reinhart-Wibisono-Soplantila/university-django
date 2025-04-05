@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Term, Grade, Status, Faculty, Department
+from .models import Term, Grade, Status, Faculty, Department, EducationLevel
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,6 +63,11 @@ class TermSerializers(serializers.ModelSerializer):
 class StatusSerializers(serializers.ModelSerializer):
     class Meta:
         model=Status
+        fields='__all__'
+
+class EducationLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=EducationLevel
         fields='__all__'
 
 class FacultySerializer(serializers.ModelSerializer):

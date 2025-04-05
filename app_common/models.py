@@ -26,6 +26,13 @@ class Grade(models.Model):
     def __str__(self):
         return self.alphabet_grade
 
+class EducationLevel(models.Model):
+    education_name=models.CharField(max_length=20)
+    foreign_name=models.CharField(max_length=20)
+    abbreviation=models.CharField(max_length=5)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
 class Status(models.Model):
     status_name=models.CharField(max_length=100, unique=True)
     created_at=models.DateTimeField(auto_now_add=True)
