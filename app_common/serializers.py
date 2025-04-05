@@ -27,7 +27,7 @@ class TermSerializers(serializers.ModelSerializer):
     
     def validate_is_active(self, value):
         any_active_term=Term.objects.filter(is_active=1).count()
-        if any_active_term>1 and value==1:
+        if any_active_term>=1 and value==1:
             raise serializers.ValidationError("There is only one active term.")
         if any_active_term==0 and value==0:
             raise serializers.ValidationError("There must be one active term.")
@@ -49,7 +49,7 @@ class TermSerializers(serializers.ModelSerializer):
             if is_active==1:
                 Term.objects.exclude(id=instance.id).update(is_active=0)
             elif is_active==0:
-                if not Term.objects.filter(is_active=1).exists():
+                if not Term.objects.filter(is_active=1).exists() or Term.objects.get(id=instance.id).is_active==1:
                     raise serializers.ValidationError("There must be one active term.")
             
         instance.year_start = year_start
@@ -87,3 +87,17 @@ class DepartmentSerializer(serializers.ModelSerializer):
         department_code=f"{faculty_code}{new_number:03d}"
         validated_data['department_code']=department_code
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        faculty=validated_data['faculty']
+        if faculty!=instance.faculty:
+            faculty_code=faculty.faculty_code
+            last_department=Department.objects.filter(faculty=faculty).order_by('-department_code').first()
+            if last_department is not None:
+                las_number=int(last_department.department_code[1:])
+                new_number=las_number+1
+            else:
+                new_number=1
+            department_code=f"{faculty_code}{new_number:03d}"
+            validated_data['department_code']=department_code
+        return super().update(instance, validated_data)
