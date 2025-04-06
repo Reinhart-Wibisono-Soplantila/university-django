@@ -27,8 +27,8 @@ class Grade(models.Model):
         return self.alphabet_grade
 
 class EducationLevel(models.Model):
-    education_name=models.CharField(max_length=20)
-    foreign_name=models.CharField(max_length=20)
+    education_name=models.CharField(max_length=30)
+    foreign_name=models.CharField(max_length=35)
     abbreviation=models.CharField(max_length=5,  db_index=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)

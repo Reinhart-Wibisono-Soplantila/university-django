@@ -43,11 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dal',
     'dal_select2',
+    'app_common',
     'app_building',
     'app_student',
-    'app_common',
-    'app_course',
     'app_staff',
+    'app_course',
     'app_schedule',
     'rest_framework',
     'phonenumber_field'

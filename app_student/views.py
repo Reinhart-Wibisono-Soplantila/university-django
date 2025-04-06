@@ -27,7 +27,8 @@ class StudentAPIView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
-            raise serializer.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
     # def put(self, request, student_nim):
     #     student_obj=get_object_or_404(Student, nim=student_nim)
@@ -37,7 +38,8 @@ class StudentAPIView(APIView):
     #         serializer.save()
     #         return success_response(serializer.data, message="success update data")
     #     except IntegrityError as e:
-    #         raise serializer.ValidationError({"Integrity error": str(e)})
+    #         error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
     # def patch(self, request, student_nim):
     #     student_obj=get_object_or_404(Student, nim=student_nim)
@@ -47,7 +49,8 @@ class StudentAPIView(APIView):
     #         serializer.save()
     #         return success_response(serializer.data, message="success update data")
     #     except IntegrityError as e:
-    #         raise serializer.ValidationError({"Integrity error": str(e)})
+    #         error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
     def delete(self, request, student_nim):
         student_obj=get_object_or_404(Student, nim=student_nim)
@@ -73,7 +76,8 @@ class StudentProfileApiView(APIView):
 #             serializer.save()
 #             return success_response(serializer.data, message="success create data")
 #         except IntegrityError as e:
-#             raise serializer.ValidationError({"Integrity error": str(e)})
+#             error_clean = str(e).replace('\n', ' ').replace('"', '')
+            # raise ValidationError({error_clean})
     
     # def put(self, request, student_nim):
     #     student_obj=get_object_or_404(Student, nim=student_nim)
@@ -84,7 +88,8 @@ class StudentProfileApiView(APIView):
     #         serializer.save()
     #         return success_response(serializer.data, message="success update data")
     #     except IntegrityError as e:
-    #         raise serializer.ValidationError({"Integrity error": str(e)})
+    #         error_clean = str(e).replace('\n', ' ').replace('"', '')
+            # raise ValidationError({error_clean})
     
     def patch(self, request, student_nim):
         studentprofile_obj=get_object_or_404(StudentProfile.objects.select_related('student'), student__nim=student_nim)
@@ -94,7 +99,8 @@ class StudentProfileApiView(APIView):
             serializer.save()
             return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
-            raise serializer.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
 #     def delete(self, request, student_nim):
 #         student_obj=get_object_or_404(Student, nim=student_nim)

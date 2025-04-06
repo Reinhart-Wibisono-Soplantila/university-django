@@ -22,7 +22,8 @@ class BuildingApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message='success create data')
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
 
     def put(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -32,7 +33,8 @@ class BuildingApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message='success update data')
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
         
     def patch(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -42,7 +44,8 @@ class BuildingApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message="success update data")
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
 
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
@@ -69,7 +72,8 @@ class RoomApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message='success create data')
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
 
     def put(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
@@ -79,7 +83,8 @@ class RoomApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message='success update data')
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
         
     def patch(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
@@ -89,7 +94,8 @@ class RoomApiView(APIView):
             serializers.save()
             return success_response(serializers.data, message="success update data")
         except IntegrityError as e:
-            raise serializers.ValidationError({"Integrity error": str(e)})
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
 
     def delete(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)

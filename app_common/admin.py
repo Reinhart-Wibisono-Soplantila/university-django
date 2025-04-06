@@ -39,7 +39,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(AcademicProgram)
 class AcademicProgramAdmin(admin.ModelAdmin):
-    list_display=['academic_program_code', 'academic_program_name', 'faculty', 'education_level']
+    list_display=['id', 'academic_program_code', 'academic_program_name', 'faculty', 'education_level']
     search_fields=['academic_program_code', 'academic_program_name']
     list_filter=['faculty', 'education_level']
     ordering=['academic_program_code']
