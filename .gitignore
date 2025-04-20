@@ -42,3 +42,4 @@ staticfiles/
 media/
 app_report/templates/maps/
 /notes.txt
+/requirements.txt

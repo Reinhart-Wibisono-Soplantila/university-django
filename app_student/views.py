@@ -39,7 +39,7 @@ class StudentAPIView(APIView):
     #         return success_response(serializer.data, message="success update data")
     #     except IntegrityError as e:
     #         error_clean = str(e).replace('\n', ' ').replace('"', '')
-            raise ValidationError({error_clean})
+            # raise ValidationError({error_clean})
     
     # def patch(self, request, student_nim):
     #     student_obj=get_object_or_404(Student, nim=student_nim)
@@ -50,7 +50,7 @@ class StudentAPIView(APIView):
     #         return success_response(serializer.data, message="success update data")
     #     except IntegrityError as e:
     #         error_clean = str(e).replace('\n', ' ').replace('"', '')
-            raise ValidationError({error_clean})
+            # raise ValidationError({error_clean})
     
     def delete(self, request, student_nim):
         student_obj=get_object_or_404(Student, nim=student_nim)

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Course, CourseType
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:

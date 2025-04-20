@@ -41,18 +41,80 @@ class RegisterScheduleSerializer(serializers.ModelSerializer):
         read_only_fields=['term']
     
     def create(self, validated_data):
-        term=Term.objects.get(is_activate=1).term_code
-        validated_data['term']=term
-        return super().create(validated_data)
+        schedules = validated_data.get('schedule', [])
+        student = validated_data.get('student')
+        
+        for schedule in schedules:
+            if schedule.remaining_quota <= 0:
+                raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
+        
+        term = Term.objects.get(is_activate=1)
+        
+        # Cek apakah sudah ada pendaftaran untuk siswa dan term ini
+        existing_schedule = RegisteredSchedule.objects.filter(student=student, term=term).first()
+        
+        if existing_schedule:
+            # Jika sudah ada, langsung lakukan update
+            schedule_ids = [s.id for s in validated_data.get('schedule', [])]
+            existing_schedule.update_schedule(schedule_ids)
+            return existing_schedule
+
+        validated_data['term'] = term
+        
+        # Simpan instance terlebih dahulu
+        instance = super().create(validated_data)
+
+        # Panggil update_schedule di model untuk penyesuaian kuota
+        schedule_ids = [s.id for s in schedules]
+        instance.update_schedule(schedule_ids)
+
+        return instance
+
+    # UPDATE DENGAN MEMASUKKAN UPDATE_SCHEDULE DARI MODELS
+    # def update(self, instance, validated_data):
+    #     new_schedules = validated_data.get('schedule', [])
+    #     schedule_ids = [s.id for s in new_schedules]
+
+    #     for schedule in new_schedules:
+    #         if schedule.remaining_quota <= 0:
+    #             raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
+
+    #     # Panggil logika kuota dan perubahan jadwal
+    #     instance.update_schedule(schedule_ids)
+
+    #     return instance
+
     
-    def update(self, instance, validated_data):
-        old_schedules=set(instance.schedule.all())
-        new_schedules=set(validated_data.get('schedule'))
-        if not old_schedules==new_schedules:
-            to_add = new_schedules - old_schedules
-            to_remove = old_schedules - new_schedules
-            if to_add:
-                instance.schedule.add(*to_add)
-            if to_remove:
-                instance.schedule.remove(*to_remove)
-        return super().update(instance, validated_data)
+    # ORI
+    # def create(self, validated_data):
+    #     schedules = validated_data.get('schedule', [])
+    #     for schedule in schedules:
+    #         if schedule.remaining_quota <= 0:
+    #             raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
+        
+    #     term=Term.objects.get(is_activate=1)
+    #     validated_data['term']=term
+    #     return super().create(validated_data)
+    
+    # def update(self, instance, validated_data):
+        
+    #     new_schedules = validated_data.get('schedule', [])
+    #     schedule_ids = [s.id for s in new_schedules]
+
+    #     for schedule in new_schedules:
+    #         if schedule.remaining_quota <= 0:
+    #             raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
+
+    #     instance.update_schedule(schedule_ids)
+    
+    
+    #     old_schedules=set(instance.schedule.all())
+    #     new_schedules=set(validated_data.get('schedule'))
+    #     if not old_schedules==new_schedules:
+    #         to_add = new_schedules - old_schedules
+    #         to_remove = old_schedules - new_schedules
+    #         if to_add:
+    #             instance.schedule.add(*to_add)
+    #         if to_remove:
+    #             instance.schedule.remove(*to_remove)
+    #     return super().update(instance, validated_data)

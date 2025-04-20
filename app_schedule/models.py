@@ -6,7 +6,7 @@ from app_course.models import Course
 from app_building.models import Building, Room
 from app_staff.models import TeachingStaff
 from app_student.models import Student 
-from app_common.models import  Term
+from app_common.models import  Term, Department, Faculty
 
 # Create your models here.    
 class Schedule(models.Model):
@@ -20,15 +20,27 @@ class Schedule(models.Model):
         (7, "Semester 7"),
         (8, "Semester 8"),
     ]
+    
+    DAYS_OF_WEEK = [
+        ('Senin', 'Senin'),
+        ('Selasa', 'Selasa'),
+        ('Rabu', 'Rabu'),
+        ('Kamis', 'Kamis'),
+        ('Jumat', 'Jumat'),
+        ('Sabtu', 'Sabtu'),
+        ('Minggu', 'Minggu'),
+    ]
+    
     semester_pack=models.IntegerField(choices=semester_choices, default=1)
     course=models.OneToOneField(Course, on_delete=models.CASCADE, related_name='schedules')
     building=models.ForeignKey(Building, on_delete=models.CASCADE, related_name='schedules')
     room=models.ForeignKey(Room, on_delete=models.CASCADE, related_name='schedules')
     teaching_staff=models.ForeignKey(TeachingStaff, on_delete=models.CASCADE, related_name='schedules')
+    department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name='schedules')
     max_quota=models.PositiveIntegerField()
     remaining_quota=models.PositiveIntegerField(default=0)
     registered_quota=models.PositiveIntegerField(default=0)
-    date_held=models.DateField()
+    day_held=models.CharField(max_length=6, choices=DAYS_OF_WEEK)
     time_start=models.TimeField()
     time_finish=models.TimeField()
     created_at=models.DateTimeField(auto_now_add=True)

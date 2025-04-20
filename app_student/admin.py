@@ -22,4 +22,5 @@ class STudentProfileAdmin(admin.ModelAdmin):
         return obj.student.nim
     get_nim.admin_order_field='student__nim'
     get_nim.short_description = 'NIM'
+    
 admin.site.register(StudentResult)
