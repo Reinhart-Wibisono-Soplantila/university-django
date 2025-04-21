@@ -61,12 +61,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
     'university.middleware.CustomExceptionMiddleware',
 ]
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER':'university.response.custom_exception_handler'
+    'EXCEPTION_HANDLER':'university.response.custom_exception_handler',
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # )
 }
 
 ROOT_URLCONF = 'university.urls'

@@ -5,14 +5,14 @@ from .models import TeachingStaff, AdministrativeStaff, PositionTeachingStaff, A
 
 @admin.register(TeachingStaff)
 class TeachingStaffAdmin(admin.ModelAdmin):
-    list_display=['id', 'nip', 'fullname', 'position', 'faculty', 'department']
+    list_display=['id', 'nip', 'full_name', 'position', 'faculty', 'department']
     search_fields=['fullname']
     list_filter=['faculty', 'department', 'position']
     ordering=['nip']
 
 @admin.register(AdministrativeStaff)
 class AdministrativeStaffAdmin(admin.ModelAdmin):
-    list_display=['id', 'nip', 'fullname', 'faculty', 'department']
+    list_display=['id', 'nip', 'full_name', 'faculty', 'department']
     search_fields=['fullname']
     list_filter=['faculty', 'department']
     ordering=['nip']

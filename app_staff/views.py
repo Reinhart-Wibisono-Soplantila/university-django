@@ -192,3 +192,42 @@ class ExpertiseApiView(APIView):
         expertise_obj.delete()
         return delete_reponse()
             
+class SuperAdminStaffApiView(APIView):
+    def get(self, request, nip=None):
+        if nip is not None:
+            superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+            serializer=SuperAdminSerializer_Get(superadmin_obj)
+        else:
+            superadmin_obj=SuperAdminStaff.objects.all()
+            serializer=SuperAdminSerializer_Get(superadmin_obj, many=True)
+        return success_response(serializer.data, message="success retrieve data")
+    
+    def post(self, request):
+        serializer=SuperAdminSerializer_Create(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            # response_serializer = SuperAdminSerializer_Detail(serializer)
+            return success_response(serializer.data, message="success create data")
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
+        
+    def patch(self, request, nip):
+        superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+        serializer=SuperAdminSerializer_Update(superadmin_obj, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+            return success_response(serializer.data, message="success update data")
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
+    
+    def delete(self, request, nip):
+        superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+        superadmin_obj.delete()
+        return delete_reponse()
+
+    def options(self, request, *args, **kwargs):
+        return super().options(request, *args, **kwargs)
