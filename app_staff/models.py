@@ -21,7 +21,7 @@ class AreaOfExpertise(models.Model):
         return self.expertise_field
 
 class SuperAdminStaff(models.Model):
-    user=models.OneToOneField(User, on_delete=models.CASCADE)
+    user=models.OneToOneField(User, on_delete=models.CASCADE, related_name='super_admin')
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     full_name=models.CharField(max_length=255)
     phone_number=PhoneNumberField(unique=True)

@@ -9,10 +9,6 @@ class UserSerializer_Regis(serializers.ModelSerializer):
         model = User  # Model User
         fields = ['email', 'username', 'password', 'first_name', 'last_name']
         extra_kwargs = {'password': {'write_only': True}}
-        
-    def create(self, validated_data):
-        user=User.objects.create_user(**validated_data)
-        return user
     
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
@@ -73,7 +69,6 @@ class SuperAdminSerializer_Create(serializers.ModelSerializer):
             # Jika ada error, kita lemparkan ValidationError untuk memberitahukan kesalahan
             raise ValidationError(f"An error occurred while creating user: {str(e)}")
         return superadminstaff
-
 
 class SuperAdminSerializer_Update(serializers.ModelSerializer):
     user = UserSerializer_Regis()
