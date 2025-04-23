@@ -215,7 +215,7 @@ class SuperAdminStaffApiView(APIView):
         
     def patch(self, request, nip):
         superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
-        serializer=SuperAdminSerializer_Update(superadmin_obj, partial=True)
+        serializer=SuperAdminSerializer_Update(superadmin_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()

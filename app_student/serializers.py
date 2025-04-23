@@ -51,6 +51,7 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['nim']
     
+    # perbaiki nama validate
     def validate(self, data):
         faculty = data.get("faculty") or self.instance.faculty
         department = data.get("department") or self.instance.department

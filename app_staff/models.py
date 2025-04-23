@@ -25,7 +25,6 @@ class SuperAdminStaff(models.Model):
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     full_name=models.CharField(max_length=255)
     phone_number=PhoneNumberField(unique=True)
-    email=models.EmailField()
     address=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
