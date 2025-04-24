@@ -50,6 +50,7 @@ class TeachingStaff(models.Model):
         return f"{self.nip}-{self.fullname}"
     
 class AdministrativeStaff(models.Model):
+    user=models.OneToOneField(User, on_delete=models.CASCADE, related_name='administrative_staff')
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     full_name=models.CharField(max_length=255)
     faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="administrative_staff")
