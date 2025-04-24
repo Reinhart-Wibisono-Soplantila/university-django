@@ -163,7 +163,7 @@ class TeachingStaffSerializer_Create(serializers.ModelSerializer):
     user=UserSerializer()
     class Meta:
         model=TeachingStaff
-        fields=['nip', 'full_name', 'position', 'faculty', 'department','position' ,'phone_number', 'user']
+        fields=['nip', 'full_name', 'faculty', 'department','position' ,'phone_number', 'user']
     
     def validate(self, data):
         return department_validation(self, data)
@@ -231,22 +231,62 @@ class TeachingStaffSerializer_Update(serializers.ModelSerializer):
             raise ValidationError(f"An error occurred while updating user: {str(e)}")
         return instance
     
-class AdminStaffSerializer(serializers.ModelSerializer):
+class AdminStaffSerializer_Get(serializers.ModelSerializer):
     phone_number=PhoneNumberField()
+    user=UserSerializer()
     class Meta:
         model=AdministrativeStaff
         fields='__all__'
-        
-    def validate_phone_number(self, value):
-        if AdministrativeStaff.objects.filter(phone_number=value).exists():
-            raise serializers.ValidationError("Phone number must be unique.")
-        return value
+
+class AdminStaffSerializer_Create(serializers.ModelSerializer):
+    phone_number=PhoneNumberField()
+    user=UserSerializer()
+    class Meta:
+        model=AdministrativeStaff
+        fields=['nip', 'full_name', 'faculty', 'department', 'phone_number', 'user']
     
     def validate(self, data):
-        faculty = data.get("faculty") or self.instance.faculty
-        department = data.get("department") or self.instance.department
-        if "faculty" in data and department and not faculty.departments.filter(id=department.id).exists():
-            raise ValidationError({"detail": "Department is not listed in this Faculty"})
-        return data
+        return department_validation(self, data)
+    
+    def create(self, validated_data):
+        user_data=validated_data.pop('user')
+        try:
+            with transaction.atomic():
+                user=User.objects.create_user(**user_data)
+                group=Group.objects.get(name='administrative staff')
+                user.groups.add(group)
+                administrativestaff=AdministrativeStaff.objects.create(user=user, **validated_data)
+        except Exception as e:
+            raise ValidationError(f"An error occurred while creating user: {str(e)}")
+        return administrativestaff
 
-#Validate data that is not link to User or user profile 
+class AdminStaffSerializer_Update(serializers.ModelSerializer):
+    user=UserSerializer()
+    
+    class Meta:
+        model=AdministrativeStaff
+        fields='__all__'
+    
+    def validate(self, data):
+        return department_validation(self, data)
+    
+    def update(self, instance, validated_data):
+        user_data=validated_data.pop('user', None)
+        try:
+            with transaction.atomic():
+                for attr, value in validated_data.items():
+                    setattr(instance, attr, value)
+                instance.save()
+                
+                if user_data:
+                    user=instance.user
+                    for attr, value in user_data.items():
+                        if attr=='password':
+                            user.set_password(value)
+                        else:
+                            setattr(user, attr, value)
+                    user.save()
+                    
+        except Exception as e:
+            raise ValidationError(f"An error occurred while updating user: {str(e)}")
+        return instance
