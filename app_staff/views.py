@@ -59,14 +59,14 @@ class TeachingStaffApiView(APIView):
     def get(self, request, nip=None):
         if nip is not None:
             teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
-            serializer=TeachingStaffSerializer(teaching_obj)
+            serializer=TeachingStaffSerializer_Get(teaching_obj)
         else:
             teaching_obj=TeachingStaff.objects.all()
-            serializer=TeachingStaffSerializer(teaching_obj, many=True)
+            serializer=TeachingStaffSerializer_Get(teaching_obj, many=True)
         return success_response(serializer.data, message='success retrieve data')
 
     def post(self, request):
-        serializer=TeachingStaffSerializer(data=request.data)
+        serializer=TeachingStaffSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
@@ -74,21 +74,10 @@ class TeachingStaffApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-    
-    def put(self, request, nip):
-        teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
-        serializer=TeachingStaffSerializer(teaching_obj, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
-        except IntegrityError as e:
-            error_clean = str(e).replace('\n', ' ').replace('"', '')
-            raise ValidationError({error_clean})
         
     def patch(self, request, nip):
         teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
-        serializer=TeachingStaffSerializer(teaching_obj, data=request.data, partial=True)
+        serializer=TeachingStaffSerializer_Update(teaching_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
@@ -100,7 +89,7 @@ class TeachingStaffApiView(APIView):
     def delete(self, request, nip):
         teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
         # teaching_obj.areas_of_expertise.clear()
-        teaching_obj.delete()
+        teaching_obj.user.delete()
         return delete_reponse()
 
     def options(self, request, *args, **kwargs):
@@ -226,7 +215,7 @@ class SuperAdminStaffApiView(APIView):
     
     def delete(self, request, nip):
         superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
-        superadmin_obj.delete()
+        superadmin_obj.user.delete()
         return delete_reponse()
 
     def options(self, request, *args, **kwargs):

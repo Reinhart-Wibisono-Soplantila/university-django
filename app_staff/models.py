@@ -34,6 +34,7 @@ class SuperAdminStaff(models.Model):
     
 
 class TeachingStaff(models.Model):
+    user=models.OneToOneField(User, on_delete=models.CASCADE, related_name='teaching_staff')
     nip=models.CharField(max_length=30, db_index=True,unique=True)
     full_name=models.CharField(max_length=255)
     position=models.ForeignKey(PositionTeachingStaff, on_delete=models.CASCADE, related_name="teaching_staff")
@@ -41,7 +42,6 @@ class TeachingStaff(models.Model):
     department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="teaching_staff")
     areas_of_expertise=models.ManyToManyField(AreaOfExpertise, related_name="teaching_staff")
     phone_number=PhoneNumberField(unique=True)
-    email=models.EmailField()
     address=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -54,7 +54,6 @@ class AdministrativeStaff(models.Model):
     full_name=models.CharField(max_length=255)
     faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="administrative_staff")
     department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="administrative_staff")
-    email=models.EmailField()
     phone_number=PhoneNumberField(unique=True)
     address=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
