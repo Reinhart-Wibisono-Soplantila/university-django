@@ -1,85 +1,87 @@
 from rest_framework import serializers
-from .models import Student, StudentProfile
+from .models import Student
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
+from django.contrib.auth.models import User, Group
+from app_user.serializer import *
+import uuid
 
-# class StudentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=Student
-#         fields='__all__'
-#         read_only_fields=['nim']
-    
-#     def validate(self, data):
-#         faculty = data.get("faculty") or self.instance.faculty
-#         department = data.get("department") or self.instance.department
-#         if "faculty" in data and department and not faculty.departments.filter(id=department.id).exists():
-#             raise ValidationError({"detail": "Department is not listed in this Faculty"})
-#         return data
-    
-#     def update(self, instance, validated_data):
-#         faculty=validated_data.get('faculty', instance.faculty)
-#         department=validated_data.get('department', instance.department)
-#         registration_year=validated_data.get('registration_year', instance.registration_year)
-        
-#         faculty_code=faculty.faculty_code if faculty!=instance.faculty else instance.faculty.faculty_code
-#         department_code=department.id if department!=instance.department else instance.department.id
-#         year=str(registration_year)[-2:] if registration_year!=instance.registration_year else str(instance.registration_year)[-2:]
-        
-#         if faculty_code!=instance.faculty.faculty_code or registration_year!=instance.registration_year or department_code!=instance.department.id:
-#             last_student=Student.objects.filter(faculty=faculty, registration_year=registration_year, department=department).order_by('-nim').first()
-#             student_number=int(last_student.nim[-3:])+1 if last_student else 1
-#             instance.nim=f'{faculty_code}{department_code:02d}1{year}1{student_number:03d}'
-                
-#         for attr, value in validated_data.items():
-#             setattr(instance, attr, value)
-        
-#         instance.save()
-#         return instance
-    
-class StudentProfileSerializer(serializers.ModelSerializer):
+def validation_departments(serializer, data):
+    faculty = data.get("faculty") or serializer.instance.faculty
+    department = data.get("department") or serializer.instance.department
+    if "faculty" in data and department and not faculty.departments.filter(id=department.id).exists():
+        raise ValidationError({"detail": "Department is not listed in this Faculty"})
+
+class StudentSerializer_Get(serializers.ModelSerializer):
     phone_number=PhoneNumberField()
+    user=UserSerializer()
     class Meta:
-        model=StudentProfile
+        model=Student
         fields='__all__'
-        read_only_fields = ['student']
-        
-class StudentSerializer(serializers.ModelSerializer):
-    profile = StudentProfileSerializer(write_only=True, required=False)  # Tambahkan profile
-
+    
+class StudentSerializer_Create(serializers.ModelSerializer):    
+    user=ReadOnlyUsernameUserSerializer()
+    full_name=serializers.CharField(required=False, allow_blank=True)
+    
     class Meta:
         model = Student
-        fields = '__all__'
+        fields = ['nim', 'full_name', 'faculty', 'department', 'phone_number', 'registration_year', 'user']
         read_only_fields = ['nim']
     
     # perbaiki nama validate
-    def validate(self, data):
-        faculty = data.get("faculty") or self.instance.faculty
-        department = data.get("department") or self.instance.department
-        if "faculty" in data and department and not faculty.departments.filter(id=department.id).exists():
-            raise ValidationError({"detail": "Department is not listed in this Faculty"})
-        return data
+    def validate(self, attrs):
+        validation_departments(self, attrs)
+        return attrs
 
     def create(self, validated_data):
-        profile_data = validated_data.pop('profile', None)  # Ambil data profile jika ada
-        student = Student.objects.create(**validated_data)
-        if profile_data:
-            StudentProfile.objects.create(student=student, **profile_data)  # Buat profile
-
+        user_data=validated_data.pop('user')
+        try:
+            with transaction.atomic():
+                user_data['username'] = f"temp-{uuid.uuid4().hex[:10]}"
+                user_data['password'] = f"temp-{uuid.uuid4().hex[:10]}"
+                user=User.objects.create_user(**user_data)
+                group=Group.objects.get(name='Student')
+                user.groups.add(group)
+                student=Student.objects.create(user=user, **validated_data)
+                user.username=student.nim
+                user.set_password(student.nim)
+                user.save()
+        except Exception as e:
+            raise ValidationError(f"An error occured while creating user: {str(e)}")
         return student
 
+class StudentSerializer_Update(serializers.ModelSerializer):    
+    user=UserSerializer()
+    date_birth = serializers.DateField(required=True)
+    
+    class Meta:
+        model = Student
+        fields = '__all__'
+        read_only_fields = ['nim', 'faculty', 'department', 'user']
+    
+    def validate(self, attrs):
+        validation_departments(self, attrs)
+        return attrs
+    
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile', None)
-
-        # Update data student
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        # Update atau buat data profile
-        if profile_data:
-            profile, created = StudentProfile.objects.get_or_create(student=instance)
-            for attr, value in profile_data.items():
-                setattr(profile, attr, value)
-            profile.save()
-
+        user_data=validated_data.pop('user', None)
+        try:
+            with transaction.atomic():
+                for attr, value in validated_data.items():
+                    setattr(instance, attr, value)
+                instance.save()
+                
+                if user_data:
+                    user=instance.user
+                    serializer=UserSerializer(user, data=user_data, partial=True)
+                    if serializer.is_valid(raise_exception=True):
+                        serializer.save()
+        except Exception as e:
+            raise ValidationError(f"An error occured while updating user: {str(e)}")
         return instance
+
+    def to_representation(self, instance):
+        rep=super().to_representation(instance)
+        rep.pop('password', None)
+        return rep

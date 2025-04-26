@@ -3,13 +3,21 @@ from app_common.models import Faculty, Department, Status, Grade
 from app_course.models import Course
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Student(models.Model):
+    user=models.OneToOneField(User, on_delete=models.CASCADE, related_name='student')
     nim=models.CharField(max_length=15, db_index=True, unique=True, editable=False)
+    full_name=models.CharField(max_length=255)
     faculty=models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="student_faculty")
     department=models.ForeignKey(Department, on_delete=models.CASCADE, related_name="student_department")
+    phone_number=PhoneNumberField(unique=True)
+    address=models.TextField()
+    city_birth=models.CharField(max_length=255)
+    date_birth=models.DateField(null=True, blank=True)
     registration_year = models.IntegerField(default=now().year)
+    status=models.ForeignKey(Status, on_delete=models.CASCADE, default=1)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
@@ -29,29 +37,14 @@ class Student(models.Model):
     def __str__(self):
         return self.nim
     
-class StudentProfile(models.Model):
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, editable=False)
-    fullname=models.CharField(max_length=255)
-    phone_number=PhoneNumberField()
-    address=models.TextField()
-    city_birth=models.CharField(max_length=255)
-    date_birth=models.DateField()
-    email=models.EmailField()
-    status=models.ForeignKey(Status, on_delete=models.CASCADE, default=1)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
+# class StudentResult(models.Model):
+#     registered_schedule = models.ForeignKey("app_schedule.RegisteredSchedule", on_delete=models.CASCADE, related_name="results")
+#     grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, related_name="results")
+#     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='results')
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
     
-    def __str__(self):
-        return self.student.nim
-    
-class StudentResult(models.Model):
-    registered_schedule = models.ForeignKey("app_schedule.RegisteredSchedule", on_delete=models.CASCADE, related_name="results")
-    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, related_name="results")
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='results')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.registered_schedule}-{self.registered_schedule.student.nim}"
+#     def __str__(self):
+#         return f"{self.registered_schedule}-{self.registered_schedule.student.nim}"
     
         
