@@ -62,38 +62,30 @@ class RegisteredSchedule(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     
+    @transaction.atomic
     def update_schedule(self, new_schedule_ids):
-        """
-        Update registered schedules and adjust quota accordingly.
-        """
-        cache_key = f"student_{self.student.id}_term_{self.term.id}_schedules"
-        cached_schedules = cache.get(cache_key)
+        all_schedule_ids = set(self.schedule.values_list("id", flat=True)).union(new_schedule_ids)
+        Schedule.objects.filter(id__in=all_schedule_ids).select_for_update()
         
-        if cached_schedules is None:
-            old_schedules = set(self.schedule.values_list("id", flat=True))
-            cache.set(cache_key, list(old_schedules), timeout=300)
-        else:
-            old_schedules = set(cached_schedules)
-
+        old_schedules = set(self.schedule.values_list("id", flat=True))
         new_schedules = set(new_schedule_ids)
         to_add = new_schedules - old_schedules
         to_remove = old_schedules - new_schedules
 
-        if to_add:
-            self.schedule.add(*to_add)
-            Schedule.objects.filter(id__in=to_add).update(
-                remaining_quota=F("remaining_quota") - 1,
-                registered_quota=F("registered_quota") + 1
-            )
-        
-        if to_remove:
-            self.schedule.remove(*to_remove)
-            Schedule.objects.filter(id__in=to_remove).update(
-                remaining_quota=F("remaining_quota") + 1,
-                registered_quota=F("registered_quota") - 1
-            )
-        
-        cache.set(cache_key, list(new_schedules), timeout=300)
+        with transaction.atomic():
+            if to_add:
+                Schedule.objects.filter(id__in=to_add).update(
+                    remaining_quota=F("remaining_quota") - 1,
+                    registered_quota=F("registered_quota") + 1
+                )
+                self.schedule.add(*to_add)
+            
+            if to_remove:
+                Schedule.objects.filter(id__in=to_remove).update(
+                    remaining_quota=F("remaining_quota") + 1,
+                    registered_quota=F("registered_quota") - 1
+                )
+                self.schedule.remove(*to_remove)
         
     def __str__(self):
         return f"{self.id}-{self.student.nim}"

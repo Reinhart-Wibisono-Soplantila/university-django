@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Schedule, RegisteredSchedule
 from app_common.models import Term
+from django.db import transaction
 
 class ScheduleSerializer(serializers.ModelSerializer):
     semester_pack_display = serializers.CharField(source='get_semester_pack_display', read_only=True)
@@ -34,28 +35,33 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         return super().update(instance, validated_data)
     
+
 class RegisterScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model=RegisteredSchedule
         fields=['student', 'schedule']
         read_only_fields=['term']
     
+    @transaction.atomic
     def create(self, validated_data):
         schedules = validated_data.get('schedule', [])
         student = validated_data.get('student')
-        
-        for schedule in schedules:
-            if schedule.remaining_quota <= 0:
-                raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
-        
         term = Term.objects.get(is_activate=1)
         
+        schedules_to_lock=Schedule.objects.filter(id__in=[s.id for s in self.schedules]).select_for_update()
+        locked_schedules={s.id: s for s in schedules_to_lock}
+        
+        for schedule in schedules:
+            if locked_schedules[schedule.id].remaining_quota <= 0:
+                raise serializers.ValidationError(f"Schedule {schedule.id} is full.")
+        
+        
         # Cek apakah sudah ada pendaftaran untuk siswa dan term ini
-        existing_schedule = RegisteredSchedule.objects.filter(student=student, term=term).first()
+        existing_schedule = RegisteredSchedule.objects.filter(student=student, term=term).select_for_update().first()
         
         if existing_schedule:
             # Jika sudah ada, langsung lakukan update
-            schedule_ids = [s.id for s in validated_data.get('schedule', [])]
+            schedule_ids = [s.id for s in schedules]
             existing_schedule.update_schedule(schedule_ids)
             return existing_schedule
 
