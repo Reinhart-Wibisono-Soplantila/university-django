@@ -94,7 +94,7 @@ class RoomApiView(APIView):
             data=cache.get(cache_key)
             if not data:
                 room_obj=get_object_or_404(self.get_queryset(), id=room_id)
-                serializer=RoomSerializerGet(room_obj)
+                serializer=RoomSerializer(room_obj)
                 data=serializer.data
                 cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         else:
@@ -102,10 +102,10 @@ class RoomApiView(APIView):
             data=cache.get(cache_key)
             if not data:
                 room_obj=self.get_queryset().all()
-                serializer=RoomSerializerGet(room_obj, many=True)
+                serializer=RoomSerializer(room_obj, many=True)
                 data=serializer.data
                 cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        return success_response(serializer.data, message='success retrieve data')
+        return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=RoomSerializer(data=request.data)
