@@ -399,21 +399,37 @@ class DepartmentApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
 
 class EducationLevelApiView(APIView):
+    CACHE_TIMEOUT = 60*60
+    
+    @staticmethod
+    def clear_cache_edulevel(edulevel_id=None):
+        keys=["edulevel_all"]
+        if edulevel_id:
+            keys.append(f"edulevel_{edulevel_id}")
+        cache.delete_many(keys)
+    
     def get(self, request, edulevel_id=None):
-        if edulevel_id is not None:
-            edulevel_obj=get_object_or_404(EducationLevel, id=edulevel_id)
-            serializer=EducationLevelSerializer(edulevel_obj)
-        else:
-            edulevel_obj=EducationLevel.objects.all()
-            serializer=EducationLevelSerializer(edulevel_obj, many=True)
-        return success_response(serializer.data, message="success retrieve all data")
+        cache_key=f"edulevel_{edulevel_id}" if edulevel_id else "edulevel_all"
+        data=cache.get(cache_key)
+        if not data:
+            if edulevel_id is not None:
+                edulevel_obj=get_object_or_404(EducationLevel, id=edulevel_id)
+                serializer=EducationLevelSerializer(edulevel_obj)
+            else:
+                edulevel_obj=EducationLevel.objects.all()
+                serializer=EducationLevelSerializer(edulevel_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message="success retrieve all data")
     
     def post(self, request):
         serializer=EducationLevelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success create data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_edulevel()
+                return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -423,8 +439,10 @@ class EducationLevelApiView(APIView):
         serializer=EducationLevelSerializer(edulevel_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_edulevel(edulevel_id)    
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -434,20 +452,25 @@ class EducationLevelApiView(APIView):
         serializer=EducationLevelSerializer(edulevel_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_edulevel(edulevel_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
         
     def delete(self, request, edulevel_id):
         edulevel_obj=get_object_or_404(EducationLevel, id=edulevel_id)
-        edulevel_obj.delete()
-        return delete_reponse()
-    
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
-    
+        try:
+            with transaction.atomic():
+                edulevel_obj.delete()
+                self.clear_cache_edulevel(edulevel_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
+        
 class AcademicProgramApiView(APIView):
     def get(self, request, program_id=None):
         if program_id is not None:
