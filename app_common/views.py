@@ -1,88 +1,89 @@
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.db.utils import IntegrityError
-from rest_framework import serializers
 from rest_framework.views import APIView
 from .models import *
 from .serializers import *
 from university.response import *
 from django.core.cache import cache
+from django.db import transaction
 
 # Create your views here.
 class GradeApiView(APIView):
     CACHE_TIMEOUT = 60*60
     
+    @staticmethod
+    def clear_grade_cache(grade_id=None):
+        keys=["grade_all"]
+        if grade_id:
+            keys.append(f"grade_{grade_id}")
+        cache.delete_many(keys)
+        
     def get(self, request, grade_id=None):
-        if grade_id is not None:
-            cache_key=f"grade_{grade_id}"
-            cache_data=cache.get(cache_key)
-            if not cache_data:
+        cache_key = f"grade_{grade_id}" if grade_id else "grade_all"
+        data=cache.get(cache_key)
+        if not data:
+            if grade_id is not None:
                 grade_obj=get_object_or_404(Grade, id=grade_id)
                 serializer=GradeSerializer(grade_obj)
-                data=serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        else:
-            cache_key="grade_all"
-            cache_data=cache.get(cache_key)
-            if not cache_data:
+            else:
                 grade_obj=Grade.objects.all()
                 serializer=GradeSerializer(grade_obj, many=True)
-                data=serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(data, message='success retrieve data')
         
     def post(self, request):
         serializer=GradeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            cache.delete("grade_all")
-            return created_response(serializer.data, message='success create data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_grade_cache()
+                return created_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def put(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         serializer=GradeSerializer(grade_obj, data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            cache.delete("grade_all")
-            cache.delete(f"grade_{grade_id}")
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_grade_cache(grade_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
     
     def patch(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         serializer=GradeSerializer(grade_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            cache.delete("grade_all")
-            cache.delete(f"grade_{grade_id}")
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_grade_cache(grade_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
     
     def delete(self, request, grade_id):
         grade_obj=get_object_or_404(Grade, id=grade_id)
         try:
-            grade_obj.delete()
-            cache.delete("grade_all")
-            cache.delete(f"grade_{grade_id}")
-            return delete_reponse()
+            with transaction.atomic():
+                grade_obj.delete()
+                self.clear_grade_cache(grade_id)
+                return delete_reponse(grade_id)
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-        # return Response({
-        #     "status_code":status.HTTP_200_OK,
-        #     "status":"success",
-        #     "message":"success delete data",
-        # }, status=status.HTTP_200_OK)
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
 
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
