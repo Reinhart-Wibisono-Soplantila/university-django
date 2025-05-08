@@ -45,7 +45,8 @@ class BuildingApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def put(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data)
@@ -58,7 +59,8 @@ class BuildingApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-        
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def patch(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data, partial=True)
@@ -71,7 +73,8 @@ class BuildingApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         try:
@@ -82,7 +85,8 @@ class BuildingApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-    
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
     
@@ -124,7 +128,8 @@ class RoomApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def put(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data)
@@ -137,7 +142,8 @@ class RoomApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-        
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def patch(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data, partial=True)
@@ -150,7 +156,8 @@ class RoomApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def delete(self, request, room_id):
         room_obj=get_object_or_404(Room, id=room_id)
         try:
@@ -164,4 +171,5 @@ class RoomApiView(APIView):
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)
- 
+        # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
