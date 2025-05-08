@@ -4,40 +4,44 @@ from university.response import *
 from .models import Building, Room
 from .serializers import *
 from django.core.cache import cache
+from django.db import transaction
 
 # Create your views here.
 class BuildingApiView(APIView):
     CACHE_TIMEOUT = 60*60
     
+    @staticmethod
+    def clear_cache_building(building_id):
+        keys=["building_all"]
+        if building_id:
+            keys.append(f"building_{building_id}")
+        cache.delete_many(keys)
+    
     def get_queryset(self):
         return Building.objects.select_related("faculty")
     
     def get(self, request, building_id=None):
-        if building_id is not None:
-            cache_key=f"building_{building_id}"
-            cache_data = cache.get(cache_key)
-            if not cache_data:
+        cache_key=f"building_{building_id}" if building_id else "building_all"
+        data = cache.get(cache_key)
+        if not data:
+            if building_id is not None:
                 building_obj=get_object_or_404(self.get_queryset(), id=building_id)
                 serializer=BuildingSerializer(building_obj)
-                data = serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        else:
-            cache_key="building_all"
-            cache_data = cache.get(cache_key)
-            if not cache_data:
+            else:
                 building_obj=self.get_queryset().all()
                 serializer=BuildingSerializer(building_obj, many=True)
-                data = serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+            data = serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=BuildingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            cache.delete("building_all")
-            return success_response(serializer.data, message='success create data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_building()
+                return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -47,10 +51,10 @@ class BuildingApiView(APIView):
         serializer=BuildingSerializer(building_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            cache.delete(f"building_{building_id}")
-            cache.delete("building_all")
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_building(building_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -60,10 +64,10 @@ class BuildingApiView(APIView):
         serializer=BuildingSerializer(building_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            cache.delete(f"building_{building_id}")  # Invalidate cache detail
-            cache.delete("building_all")
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_building(building_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -71,10 +75,10 @@ class BuildingApiView(APIView):
     def delete(self, request, building_id):
         building_obj=get_object_or_404(Building, id=building_id)
         try:
-            building_obj.delete()
-            cache.delete(f"building_{building_id}")  # Invalidate cache detail
-            cache.delete("building_all")
-            return delete_reponse()
+            with transaction.atomic():
+                building_obj.delete()
+                self.clear_cache_building(building_id)
+                return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
