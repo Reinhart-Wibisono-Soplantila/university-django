@@ -15,16 +15,16 @@ class BuildingApiView(APIView):
     def get(self, request, building_id=None):
         if building_id is not None:
             cache_key=f"building_{building_id}"
-            data = cache.get(cache_key)
-            if not data:
+            cache_data = cache.get(cache_key)
+            if not cache_data:
                 building_obj=get_object_or_404(self.get_queryset(), id=building_id)
                 serializer=BuildingSerializer(building_obj)
                 data = serializer.data
                 cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         else:
             cache_key="building_all"
-            data = cache.get(cache_key)
-            if not data:
+            cache_data = cache.get(cache_key)
+            if not cache_data:
                 building_obj=self.get_queryset().all()
                 serializer=BuildingSerializer(building_obj, many=True)
                 data = serializer.data
@@ -91,16 +91,16 @@ class RoomApiView(APIView):
     def get(self, request, room_id=None):
         if room_id is not None:
             cache_key=f"room_{room_id}"
-            data=cache.get(cache_key)
-            if not data:
+            cache_data=cache.get(cache_key)
+            if not cache_data:
                 room_obj=get_object_or_404(self.get_queryset(), id=room_id)
                 serializer=RoomSerializer(room_obj)
                 data=serializer.data
                 cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         else:
-            cache_key=f"room_all"
-            data=cache.get(cache_key)
-            if not data:
+            cache_key="room_all"
+            cache_data=cache.get(cache_key)
+            if not cache_data:
                 room_obj=self.get_queryset().all()
                 serializer=RoomSerializer(room_obj, many=True)
                 data=serializer.data

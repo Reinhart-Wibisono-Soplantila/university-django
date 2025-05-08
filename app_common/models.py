@@ -1,6 +1,15 @@
 from django.db import models
 
 # Create your models here.
+class Grade(models.Model):
+    numerical_grade=models.DecimalField(max_digits=3, decimal_places=2)
+    alphabet_grade=models.CharField(max_length=2, unique=True) 
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.alphabet_grade
+    
 class Term(models.Model):
     semester_choices=[
         (1, "Semester 1"),
@@ -17,15 +26,6 @@ class Term(models.Model):
     def __str__(self):
         return f"{self.year_start}/{self.year_end}-Semester {self.semester}"
     
-class Grade(models.Model):
-    numerical_grade=models.DecimalField(max_digits=3, decimal_places=2)
-    alphabet_grade=models.CharField(max_length=2, unique=True) 
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return self.alphabet_grade
-
 class EducationLevel(models.Model):
     education_name=models.CharField(max_length=30)
     foreign_name=models.CharField(max_length=35)
