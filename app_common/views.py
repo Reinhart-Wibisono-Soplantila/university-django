@@ -261,7 +261,7 @@ class FacultyApiView(APIView):
                 serializer=FacultySerializer(faculty_obj, many=True)
             data=serializer.data
             cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        return success_response(serializer.data, message='success retrieve data')
+        return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=FacultySerializer(data=request.data)
@@ -318,55 +318,85 @@ class FacultyApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
                 
 class DepartmentApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    def clear_cache_department(department_id=None):
+        keys=['department_all']
+        if department_id:
+            keys.append(f"department_{department_id}")
+        cache.delete_many(keys)
+        
+    def get_queryset(self):
+        return Department.objects.select_related("faculty")
+    
+    
     def get(self, request, department_id=None):
-        if department_id is not None:
-            department_obj=get_object_or_404(Department, id=department_id)
-            serializer=DepartmentSerializer(department_obj)
-        else:
-            department_obj=Department.objects.all()
-            serializer=DepartmentSerializer(department_obj, many=True)
-        return success_response(serializer.data, message='success retrieve data')
+        cache_key=f"department_{department_id}" if department_id else "department_all"
+        data=cache.get(cache_key)
+        if not data:
+            if department_id is not None:
+                department_obj=get_object_or_404(self.get_queryset, id=department_id)
+                serializer=DepartmentSerializer(department_obj)
+            else:
+                department_obj=self.get_queryset().all()
+                serializer=DepartmentSerializer(department_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=DepartmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return success_response(serializer.data, message='success create data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_department()
+                return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def put(self, request, department_id):
-        department_obj=get_object_or_404(Department, id=department_id)
+        department_obj=get_object_or_404(self.get_queryset(), id=department_id)
         serializer=DepartmentSerializer(department_obj, data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_department(department_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-        
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def patch(self, request, department_id):
-        department_obj=get_object_or_404(Department, id=department_id)
+        department_obj=get_object_or_404(self.get_queryset(), id=department_id)
         serializer=DepartmentSerializer(department_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_department(department_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            
     def delete(self, request, department_id):
-        department_obj=get_object_or_404(Department, id=department_id)
-        department_obj.delete()
-        return delete_reponse()
-    
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
-    
+        department_obj=get_object_or_404(self.get_queryset(), id=department_id)
+        try:
+            with transaction.atomic():
+                department_obj.delete()
+                self.clear_cache_department(department_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+
 class EducationLevelApiView(APIView):
     def get(self, request, edulevel_id=None):
         if edulevel_id is not None:
