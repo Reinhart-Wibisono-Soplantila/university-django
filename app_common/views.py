@@ -92,7 +92,7 @@ class TermApiView(APIView):
     CACHE_TIMEOUT = 60*60
     
     @staticmethod
-    def clear_cache_term(term_code):
+    def clear_cache_term(term_code=None):
         keys=["term_all"]
         if term_code:
             keys.append(f"term_{term_code}")
@@ -110,7 +110,7 @@ class TermApiView(APIView):
                 serializer=TermSerializers(term_obj, many=True)
             data=serializer.data
             cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        return success_response(serializer.data, message='success retrieve data')
+        return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=TermSerializers(data=request.data)
@@ -165,21 +165,37 @@ class TermApiView(APIView):
         return super().options(request, *args, **kwargs)
     
 class StatusApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    @staticmethod
+    def clear_cache_status(status_id=None):
+        keys=['status_all']
+        if status_id:
+            keys.append(f"status_{status_id}")
+        cache.delete_many(keys)
+    
     def get(self, request, status_id=None):
-        if status_id is not None:
-            status_obj=get_object_or_404(Status, id=status_id)
-            serializer=StatusSerializers(status_obj)
-        else:
-            status_obj=Status.objects.all()
-            serializer=StatusSerializers(status_obj, many=True)
-        return success_response(serializer.data, message='success retrieve data')
+        cache_key=f"status_{status_id}" if status_id else "status_all"
+        data=cache.get(cache_key)
+        if not data:
+            if status_id is not None:
+                status_obj=get_object_or_404(Status, id=status_id)
+                serializer=StatusSerializers(status_obj)
+            else:
+                status_obj=Status.objects.all()
+                serializer=StatusSerializers(status_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message='success retrieve data')
     
     def post(self, request):
         serializer=StatusSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try: 
-            serializer.save()
-            return created_response(serializer.data, message="success created data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_status()
+                return created_response(serializer.data, message="success created data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -189,8 +205,10 @@ class StatusApiView(APIView):
         serializer=StatusSerializers(status_obj, data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic:
+                serializer.save()
+                self.clear_cache_status(status_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -200,16 +218,24 @@ class StatusApiView(APIView):
         serializer=StatusSerializers(status_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_status(status_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def delete(self, requqest, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
-        status_obj.delete()
-        return delete_reponse()
+        try:
+            with transaction.atomic():
+                status_obj.delete()
+                self.clear_cache_status(status_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)

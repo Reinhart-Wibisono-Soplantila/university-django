@@ -11,7 +11,7 @@ class BuildingApiView(APIView):
     CACHE_TIMEOUT = 60*60
     
     @staticmethod
-    def clear_cache_building(building_id):
+    def clear_cache_building(building_id=None):
         keys=["building_all"]
         if building_id:
             keys.append(f"building_{building_id}")
@@ -90,7 +90,7 @@ class RoomApiView(APIView):
     CACHE_TIMEOUT = 60*60
     
     @staticmethod
-    def clear_cache_room(room_id):
+    def clear_cache_room(room_id=None):
         keys=["room_all"]
         if room_id:
             keys.append(f"room_{room_id}")
