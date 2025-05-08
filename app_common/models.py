@@ -26,15 +26,6 @@ class Term(models.Model):
     def __str__(self):
         return f"{self.year_start}/{self.year_end}-Semester {self.semester}"
     
-class EducationLevel(models.Model):
-    education_name=models.CharField(max_length=30)
-    foreign_name=models.CharField(max_length=35)
-    abbreviation=models.CharField(max_length=5,  db_index=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-    def __str__(self):
-        return self.abbreviation
-
 class Status(models.Model):
     status_name=models.CharField(max_length=100, unique=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -42,7 +33,7 @@ class Status(models.Model):
     
     def __str__(self):
         return self.status_name
-
+    
 class Faculty(models.Model):
     faculty_code=models.CharField(max_length=5, db_index=True, unique=True)
     # building=models.ForeignKey(Building, on_delete=models.CASCADE, related_name="faculties")
@@ -52,7 +43,6 @@ class Faculty(models.Model):
     
     def __str__(self):
         return self.faculty_name
-    
 
 class Department(models.Model):
     department_code=models.CharField(max_length=4, db_index=True, unique=True, editable=False)
@@ -63,6 +53,15 @@ class Department(models.Model):
     
     def __str__(self):
         return self.department_name
+    
+class EducationLevel(models.Model):
+    education_name=models.CharField(max_length=30)
+    foreign_name=models.CharField(max_length=35)
+    abbreviation=models.CharField(max_length=5,  db_index=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.abbreviation
     
 class AcademicProgram(models.Model):
     academic_program_code=models.CharField(max_length=15, db_index=True, unique=True, editable=False)
