@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Term, Grade, Status, Faculty, Department, EducationLevel, AcademicProgram
-
+from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model=Grade
@@ -82,36 +83,51 @@ class FacultySerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):
+    faculty_id=serializers.IntegerField(
+        write_only=True,
+        required=True,
+        allow_null=False,
+    )
+    faculty= FacultySerializer(read_only=True)
+    
     class Meta:
         model=Department
         fields='__all__'
     
-    def create(self, validated_data):
-        faculty=validated_data['faculty']
+    def validate_faculty_id(self, value):
+        if not Faculty.objects.filter(id=value).exists():
+            raise serializers.ValidationError({"faculty: Faculty does not exist"})
+        return value
+    
+    def _generate_department_code(self, faculty_id):
+        faculty = Faculty.objects.get(id=faculty_id)
         faculty_code=faculty.faculty_code
         last_department=Department.objects.filter(faculty=faculty).order_by('-department_code').first()
         if last_department is not None:
-            las_number=int(last_department.department_code[1:])
-            new_number=las_number+1
+            last_number=int(last_department.department_code[1:])
+            new_number=last_number+1
         else:
             new_number=1
         department_code=f"{faculty_code}{new_number:03d}"
-        validated_data['department_code']=department_code
+        return department_code
+    
+    def create(self, validated_data):
+        validated_data['department_code']=self._generate_department_code(validated_data['faculty_id'])
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty=validated_data['faculty']
-        if faculty!=instance.faculty:
-            faculty_code=faculty.faculty_code
-            last_department=Department.objects.filter(faculty=faculty).order_by('-department_code').first()
-            if last_department is not None:
-                las_number=int(last_department.department_code[1:])
-                new_number=las_number+1
-            else:
-                new_number=1
-            department_code=f"{faculty_code}{new_number:03d}"
-            validated_data['department_code']=department_code
+        faculty_id=validated_data.get('faculty_id', instance.faculty_id)
+        if faculty_id!=instance.faculty_id:
+            validated_data['department_code']=self._generate_department_code(faculty_id)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        rep=super().to_representation(instance)
+        if 'faculty' in rep and rep['faculty'] is not None:
+            data=rep['faculty']
+            data.pop('created_at', None)
+            data.pop('updated_at', None)
+        return rep
 
 class AcademicProgramSerializer(serializers.ModelSerializer):
     class Meta:

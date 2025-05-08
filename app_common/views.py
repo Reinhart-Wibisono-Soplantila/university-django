@@ -320,6 +320,7 @@ class FacultyApiView(APIView):
 class DepartmentApiView(APIView):
     CACHE_TIMEOUT=60*60
     
+    @staticmethod
     def clear_cache_department(department_id=None):
         keys=['department_all']
         if department_id:
@@ -335,7 +336,7 @@ class DepartmentApiView(APIView):
         data=cache.get(cache_key)
         if not data:
             if department_id is not None:
-                department_obj=get_object_or_404(self.get_queryset, id=department_id)
+                department_obj=get_object_or_404(self.get_queryset(), id=department_id)
                 serializer=DepartmentSerializer(department_obj)
             else:
                 department_obj=self.get_queryset().all()
