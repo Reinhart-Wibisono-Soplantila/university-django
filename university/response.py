@@ -54,21 +54,7 @@ def created_response(serializer, message):
     }, status=status.HTTP_201_CREATED)
 
 def delete_reponse():
-    # return Response({
-    #     "status_code":status.HTTP_204_NO_CONTENT,
-    #     "status":"success",
-    #     "message":"success delete data",
-    #     "data":None
-    # }, status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_204_NO_CONTENT)
-
-def options_response():
-    return Response({
-            "status_code":status.HTTP_200_OK,
-            "status":"success",
-            "allow":["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-            "message":"These are the allowed methods for this endpoint."
-        })
 
 def error_400_response(serializer):
     return Response({
