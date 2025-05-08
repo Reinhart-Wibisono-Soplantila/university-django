@@ -48,7 +48,7 @@ class BuildingApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def put(self, request, building_id):
-        building_obj=get_object_or_404(Building, id=building_id)
+        building_obj=get_object_or_404(self.get_queryset(), id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -62,7 +62,7 @@ class BuildingApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def patch(self, request, building_id):
-        building_obj=get_object_or_404(Building, id=building_id)
+        building_obj=get_object_or_404(self.get_queryset(), id=building_id)
         serializer=BuildingSerializer(building_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
@@ -76,7 +76,7 @@ class BuildingApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def delete(self, request, building_id):
-        building_obj=get_object_or_404(Building, id=building_id)
+        building_obj=get_object_or_404(self.get_queryset(), id=building_id)
         try:
             with transaction.atomic():
                 building_obj.delete()
@@ -86,9 +86,6 @@ class BuildingApiView(APIView):
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
-            
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
     
 class RoomApiView(APIView):
     CACHE_TIMEOUT = 60*60
@@ -104,7 +101,7 @@ class RoomApiView(APIView):
         return Room.objects.select_related("building")
     
     def get(self, request, room_id=None):
-        cache_key=f"room_{room_id}"
+        cache_key=f"room_{room_id}" if room_id else "room_all"
         data=cache.get(cache_key)
         if not data:
             if room_id is not None:
@@ -121,7 +118,7 @@ class RoomApiView(APIView):
         serializer=RoomSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            with transaction.atomic:
+            with transaction.atomic():
                 serializer.save()
                 self.clear_cache_room()
                 return success_response(serializer.data, message='success create data')
@@ -131,11 +128,11 @@ class RoomApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def put(self, request, room_id):
-        room_obj=get_object_or_404(Room, id=room_id)
+        room_obj=get_object_or_404(self.get_queryset(), id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            with transaction.atomic:
+            with transaction.atomic():
                 serializer.save()
                 self.clear_cache_room(room_id)
                 return success_response(serializer.data, message='success update data')
@@ -145,11 +142,11 @@ class RoomApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def patch(self, request, room_id):
-        room_obj=get_object_or_404(Room, id=room_id)
+        room_obj=get_object_or_404(self.get_queryset(), id=room_id)
         serializer=RoomSerializer(room_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            with transaction.atomic:
+            with transaction.atomic():
                 serializer.save()
                 self.clear_cache_room(room_id)
                 return success_response(serializer.data, message="success update data")
@@ -159,17 +156,14 @@ class RoomApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
     def delete(self, request, room_id):
-        room_obj=get_object_or_404(Room, id=room_id)
+        room_obj=get_object_or_404(self.get_queryset(), id=room_id)
         try:
-            with transaction.atomic:
+            with transaction.atomic():
                 room_obj.delete()
                 self.clear_cache_room(room_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-    
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
-        # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
+            # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
