@@ -90,32 +90,36 @@ class GradeApiView(APIView):
     
 class TermApiView(APIView):
     CACHE_TIMEOUT = 60*60
+    
+    @staticmethod
+    def clear_cache_term(term_code):
+        keys=["term_all"]
+        if term_code:
+            keys.append(f"term_{term_code}")
+        cache.delete_many(keys)
+        
     def get(self, request, term_code=None):
-        if term_code is not None:
-            cache_key=f"term_{term_code}"
-            cache_data=cache.get(cache_key)
-            if not cache_data:
+        cache_key=f"term_{term_code}"
+        data=cache.get(cache_key)
+        if not data:
+            if term_code is not None:
                 term_obj=get_object_or_404(Term, term_code=term_code)
                 serializer=TermSerializers(term_obj)
-                data=serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        else:
-            cache_key="term_all"
-            cache_data=cache.get(cache_key)
-            if not cache_data:
+            else:
                 term_obj=Term.objects.all()
                 serializer=TermSerializers(term_obj, many=True)
-                data=serializer.data
-                cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=TermSerializers(data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            cache.delete("term_all")
-            return created_response(serializer.data, message='success created data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_term()
+                return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -125,10 +129,10 @@ class TermApiView(APIView):
         serializer=TermSerializers(term_obj, data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            cache.delete(f"term_{term_code}")
-            cache.delete("term_all")
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_term(term_code)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -138,10 +142,10 @@ class TermApiView(APIView):
         serializer=TermSerializers(term_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            cache.delete(f"term_{term_code}")
-            cache.delete("term_all")
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_term(term_code)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -149,10 +153,10 @@ class TermApiView(APIView):
     def delete(self, request, term_code):
         term_obj=get_object_or_404(Term, term_code=term_code)
         try:
-            term_obj.delete()
-            cache.delete(f"term_{term_code}")
-            cache.delete("term_all")
-            return delete_reponse()
+            with transaction.atomic():
+                term_obj.delete()
+                self.clear_cache_term(term_code)
+                return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
