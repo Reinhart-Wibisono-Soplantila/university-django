@@ -472,51 +472,79 @@ class EducationLevelApiView(APIView):
             raise ValidationError({error_clean})
         
 class AcademicProgramApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    def get_queryset(self):
+        return AcademicProgram.objects.select_related("faculty", "education_level")
+    
+    @staticmethod
+    def clear_cache_academicProgram(program_id=None):
+        keys=["program_all"]
+        if program_id:
+            keys.append(f"program_{program_id}")
+        cache.delete_many(keys)
+    
     def get(self, request, program_id=None):
-        if program_id is not None:
-            program_obj=get_object_or_404(AcademicProgram, id=program_id)
-            serializer=AcademicProgramSerializer(program_obj)
-        else:
-            program_obj=AcademicProgram.objects.all()
-            serializer=AcademicProgramSerializer(program_obj, many=True)
+        cache_key=f"program_{program_id}" if program_id else "program_all"
+        data=cache.get(cache_key)
+        if not data:
+            if program_id is not None:
+                program_obj=get_object_or_404(self.get_queryset(), id=program_id)
+                serializer=AcademicProgramSerializer(program_obj)
+            else:
+                program_obj=self.get_queryset().all()
+                serializer=AcademicProgramSerializer(program_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(serializer.data, message="success retrieve all data")
     
     def post(self, request):
         serializer=AcademicProgramSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success create data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_academicProgram()
+                return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def put(self, request, program_id):
-        program_obj=get_object_or_404(AcademicProgram, id=program_id)
+        program_obj=get_object_or_404(self.get_queryset(), id=program_id)
         serializer=AcademicProgramSerializer(program_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_academicProgram(program_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def patch(self, request, program_id):
-        program_obj=get_object_or_404(AcademicProgram, id=program_id)
+        program_obj=get_object_or_404(self.get_queryset(), id=program_id)
         serializer=AcademicProgramSerializer(program_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_academicProgram(program_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
         
     def delete(self, request, program_id):
-        program_obj=get_object_or_404(AcademicProgram, id=program_id)
-        program_obj.delete()
-        return delete_reponse()
-    
+        program_obj=get_object_or_404(self.get_queryset(), id=program_id)
+        try:
+            with transaction.atomic():
+                program_obj.delete()
+                self.clear_cache_academicProgram(program_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     def options(self, request, *args, **kwargs):
         return super().options(request, *args, **kwargs)

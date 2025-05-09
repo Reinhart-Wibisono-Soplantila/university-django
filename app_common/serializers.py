@@ -130,54 +130,60 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return rep
 
 class AcademicProgramSerializer(serializers.ModelSerializer):
+    faculty_id=serializers.IntegerField(
+        required=True,
+        write_only=True,
+        allow_null=False
+    )
+    faculty=FacultySerializer(read_only=True)
+    
+    education_level_id=serializers.IntegerField(
+        required=True,
+        write_only=True,
+        allow_null=False
+    )
+    education_level=EducationLevelSerializer(read_only=True)
     class Meta:
         model=AcademicProgram
         fields='__all__'
     
-    def create(self, validated_data):
-        faculty=validated_data['faculty']
-        faculty_code=faculty.faculty_code
-        # department=validated_data['department']
-        # department_code=department.department_code
-        education_level=validated_data['education_level']
+    def _generate_program_code(self, faculty, education_level):
+        faculty_code = faculty.faculty_code
         last_program=AcademicProgram.objects.filter(faculty=faculty, education_level=education_level).order_by('-academic_program_code').first()
-        if last_program is not None:
-            las_number=int(last_program.academic_program_code[-3:])
-            new_number=las_number+1
-        else:
-            new_number=1
-        education_level=education_level.abbreviation
-        if education_level=='S1':
-            education_level_code=1
-        elif education_level=='S2':
-            education_level_code=2
-        elif education_level=='S3':
-            education_level_code=3
-        elif education_level=='S4':
-            education_level_code=4
-        academic_program_code=f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
-        validated_data['academic_program_code']=academic_program_code
+        new_number = int(last_program.academic_program_code[-3:])+1 if last_program else 1
+        level_abr=education_level.abbreviation
+        level_code={'S1':1, 'S2':2, 'S3':3, 'S4':4}
+        education_level_code=level_code.get(level_abr, 0)
+        return f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
+    
+    def create(self, validated_data):
+        faculty_id=validated_data["faculty_id"]
+        faculty=Faculty.objects.get(id=faculty_id)
+        education_level=validated_data['education_level']
+        
+        validated_data['academic_program_code']=self.generate_program_code(faculty, education_level)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty = validated_data.get('faculty', instance.faculty)
+        faculty_id=validated_data.get('faculty_id', instance.faculty_id)
+        faculty=Faculty.objects.get(id=faculty_id)
         education_level = validated_data.get('education_level', instance.education_level)
+        
         if faculty!=instance.faculty  or education_level!=instance.education_level:
-            last_program=AcademicProgram.objects.filter(faculty=faculty, education_level=education_level).order_by('-academic_program_code').first()
-            if last_program is not None:
-                las_number=int(last_program.academic_program_code[-3:])
-                new_number=las_number+1
-            else:
-                new_number=1
+            self._generate_program_code(faculty, education_level)
             
-            faculty_code=faculty.faculty_code
-            education_level=education_level.abbreviation
-            if education_level=='S1':
-                education_level_code=1
-            elif education_level=='S2':
-                education_level_code=2
-            elif education_level=='S3':
-                education_level_code=3
-            academic_program_code=f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
+            academic_program_code=self._generate_program_code(faculty, education_level)
             validated_data['academic_program_code']=academic_program_code
         return super().update(instance, validated_data)
+    
+    def to_representation(self, instance):
+        rep=super().to_representation(instance)
+        if "faculty" in rep and rep['faculty'] is not None:
+            data=rep["faculty"]
+            data.pop("created_at", None)
+            data.pop("updated_at", None)
+        if "education_level" in rep and rep["education_level"] is not None:
+            data=rep["education_level"]
+            data.pop("created_at", None)
+            data.pop("updated_at", None)
+            
