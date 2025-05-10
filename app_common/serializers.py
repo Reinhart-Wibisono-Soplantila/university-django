@@ -119,9 +119,10 @@ class DepartmentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'faculty_id' in validated_data:
             faculty_id=validated_data.pop('faculty_id')
-            if faculty_id!=instance.faculty_id:
+            if faculty_id!=instance.faculty.id:
                 faculty = Faculty.objects.get(id=faculty_id)
                 validated_data['department_code']=self._generate_department_code(faculty)
+                validated_data['faculty']=faculty
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
@@ -167,13 +168,25 @@ class AcademicProgramSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty_id=validated_data.get('faculty_id', instance.faculty_id)
-        faculty=Faculty.objects.get(id=faculty_id)
-        education_level_id = validated_data.get('education_level', instance.education_level)
-        education_level=EducationLevel.objects.get(id=education_level_id)
+        faculty=instance.faculty
+        if 'faculty_id' in validated_data:
+            faculty_id=validated_data.pop('faculty_id')
+            if faculty_id != instance.faculty.id:
+                faculty=Faculty.objects.get(id=faculty_id)
+                instance.faculty = faculty
+                
+        education_level=instance.education_level
+        if 'education_level_id' in validated_data:
+            education_level_id=validated_data.pop('education_level_id')
+            if education_level_id != instance.education_level.id:    
+                education_level=EducationLevel.objects.get(id=education_level_id)
+                instance.education_level= education_level
         
-        if faculty!=instance.faculty  or education_level!=instance.education_level:
-            self._generate_program_code(faculty, education_level)
+        generate_academic_program=(
+            'faculty_id' in validated_data or
+            'education_level_id' in validated_data
+        )
+        if generate_academic_program:
             validated_data['academic_program_code']=self._generate_program_code(faculty, education_level)
         return super().update(instance, validated_data)
     
