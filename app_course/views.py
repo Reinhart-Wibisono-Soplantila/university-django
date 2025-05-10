@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from university.response import *
 from .models import Course, CourseType
@@ -10,6 +10,7 @@ from django.db import transaction
 class CourseTypeApiView(APIView):
     CACHE_TIMEOUT=60*60
     
+    @staticmethod
     def clear_cache_courseType(coursetype_id=None):
         keys=["courseType_All"]
         if coursetype_id:
@@ -80,21 +81,40 @@ class CourseTypeApiView(APIView):
             raise ValidationError({error_clean})
 
 class CourseApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    @staticmethod
+    def clear_cache_course(course_id=None):
+        keys=["course_all"]
+        if course_id:
+            keys.append(f"course_{course_id}")
+        cache.delete_many(keys)
+        
+    def get_queryset(self):
+        return Course.objects.select_related("course_type", "faculty", "academic_program")
+    
     def get(self, request, course_id=None):
-        if course_id is not None:
-            course_obj=get_object_or_404(Course, course_id=course_id)
-            serializer=CourseSerializer(course_obj)
-        else:
-            course_obj=Course.objects.all()
-            serializer=CourseSerializer(course_obj, many=True)
-        return success_response(serializer.data, message='success retrive data')
+        cache_key=f"course_{course_id}" if course_id else "course_all"
+        data=cache.get(cache_key)
+        if not data:
+            if course_id is not None:
+                course_obj=get_object_or_404(self.get_queryset(), course_id=course_id)
+                serializer=CourseSerializer(course_obj)
+            else:
+                course_obj=self.get_queryset().all()
+                serializer=CourseSerializer(course_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message='success retrive data')
     
     def post(self, request):
         serializer=CourseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success create data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_course()
+                return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -104,8 +124,10 @@ class CourseApiView(APIView):
         serializer=CourseSerializer(course_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_course(course_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -115,17 +137,22 @@ class CourseApiView(APIView):
         serializer=CourseSerializer(course_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_course(course_id)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def delete(self, request, course_id):
         course_obj=get_object_or_404(Course, course_id=course_id)
-        course_obj.delete()
-        return delete_reponse()
-    
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
+        try:
+            with transaction.atomic():
+                course_obj.delete()
+                self.clear_cache_course(course_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
             
