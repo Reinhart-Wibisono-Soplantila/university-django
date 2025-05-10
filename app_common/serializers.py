@@ -95,12 +95,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields='__all__'
     
     def validate_faculty_id(self, value):
-        if not Faculty.objects.filter(id=value).exists():
+        if not Faculty.objects.get(id=value):
             raise serializers.ValidationError({"faculty: Faculty does not exist"})
         return value
     
-    def _generate_department_code(self, faculty_id):
-        faculty = Faculty.objects.get(id=faculty_id)
+    def _generate_department_code(self, faculty):
         faculty_code=faculty.faculty_code
         last_department=Department.objects.filter(faculty=faculty).order_by('-department_code').first()
         if last_department is not None:
@@ -112,13 +111,17 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return department_code
     
     def create(self, validated_data):
-        validated_data['department_code']=self._generate_department_code(validated_data['faculty_id'])
+        faculty_id=validated_data['faculty_id']
+        faculty = Faculty.objects.get(id=faculty_id)
+        validated_data['department_code']=self._generate_department_code(faculty)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty_id=validated_data.get('faculty_id', instance.faculty_id)
-        if faculty_id!=instance.faculty_id:
-            validated_data['department_code']=self._generate_department_code(faculty_id)
+        if 'faculty_id' in validated_data:
+            faculty_id=validated_data.pop('faculty_id')
+            if faculty_id!=instance.faculty_id:
+                faculty = Faculty.objects.get(id=faculty_id)
+                validated_data['department_code']=self._generate_department_code(faculty)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
