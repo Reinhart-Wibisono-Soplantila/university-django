@@ -131,18 +131,19 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 class AcademicProgramSerializer(serializers.ModelSerializer):
     faculty_id=serializers.IntegerField(
-        required=True,
         write_only=True,
+        required=True,
         allow_null=False
     )
     faculty=FacultySerializer(read_only=True)
     
     education_level_id=serializers.IntegerField(
-        required=True,
         write_only=True,
+        required=True,
         allow_null=False
     )
     education_level=EducationLevelSerializer(read_only=True)
+    
     class Meta:
         model=AcademicProgram
         fields='__all__'
@@ -153,27 +154,24 @@ class AcademicProgramSerializer(serializers.ModelSerializer):
         new_number = int(last_program.academic_program_code[-3:])+1 if last_program else 1
         level_abr=education_level.abbreviation
         level_code={'S1':1, 'S2':2, 'S3':3, 'S4':4}
-        education_level_code=level_code.get(level_abr, 0)
+        education_level_code=level_code.get(level_abr, 1)
         return f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
     
     def create(self, validated_data):
-        faculty_id=validated_data["faculty_id"]
-        faculty=Faculty.objects.get(id=faculty_id)
-        education_level=validated_data['education_level']
-        
-        validated_data['academic_program_code']=self.generate_program_code(faculty, education_level)
+        faculty=Faculty.objects.get(id=validated_data["faculty_id"])
+        education_level=EducationLevel.objects.get(id=validated_data['education_level_id'])
+        validated_data['academic_program_code']=self._generate_program_code(faculty, education_level)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         faculty_id=validated_data.get('faculty_id', instance.faculty_id)
         faculty=Faculty.objects.get(id=faculty_id)
-        education_level = validated_data.get('education_level', instance.education_level)
+        education_level_id = validated_data.get('education_level', instance.education_level)
+        education_level=EducationLevel.objects.get(id=education_level_id)
         
         if faculty!=instance.faculty  or education_level!=instance.education_level:
             self._generate_program_code(faculty, education_level)
-            
-            academic_program_code=self._generate_program_code(faculty, education_level)
-            validated_data['academic_program_code']=academic_program_code
+            validated_data['academic_program_code']=self._generate_program_code(faculty, education_level)
         return super().update(instance, validated_data)
     
     def to_representation(self, instance):
@@ -186,4 +184,5 @@ class AcademicProgramSerializer(serializers.ModelSerializer):
             data=rep["education_level"]
             data.pop("created_at", None)
             data.pop("updated_at", None)
+        return rep
             

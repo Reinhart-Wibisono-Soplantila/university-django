@@ -496,7 +496,7 @@ class AcademicProgramApiView(APIView):
                 serializer=AcademicProgramSerializer(program_obj, many=True)
             data=serializer.data
             cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
-        return success_response(serializer.data, message="success retrieve all data")
+        return success_response(data, message="success retrieve all data")
     
     def post(self, request):
         serializer=AcademicProgramSerializer(data=request.data)
