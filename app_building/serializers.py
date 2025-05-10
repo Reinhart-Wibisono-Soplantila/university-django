@@ -31,7 +31,7 @@ class BuildingSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         faculty_id=validated_data.pop("faculty_id", None)
-        if faculty_id is not None:
+        if faculty_id is not None and faculty_id != instance.faculty.id:
             faculty=get_object_or_404(Faculty, id=faculty_id)
             instance.faculty= faculty
         return super().update(instance, validated_data)
@@ -69,7 +69,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         building_id=validated_data.pop("building_id", None)
-        if building_id is not None:
+        if building_id is not None and building_id != instance.building.id:
             building=get_object_or_404(Building, id=building_id)
             instance.building= building
         return super().update(instance, validated_data)
