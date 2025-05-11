@@ -12,21 +12,62 @@ from django.db import transaction
 
 class ScheduleSerializer(serializers.ModelSerializer):
     semester_pack_display = serializers.CharField(source='get_semester_pack_display', read_only=True)
+
+    department=DepartmentSerializer(read_only=True)
+    department_id=serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        write_only=True,
+        required=True,
+        source='department',
+        error_messages={
+            'does_not_exist': 'Department dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Department ID harus berupa angka',
+            'required': 'Field Department harus diisi!'})
     
-    department=serializers.PrimaryKeyRelatedField(queryset=Department.objects.all())
-    department_info=DepartmentSerializer(source='department', read_only=True)
+    course=CourseSerializer(read_only=True)
+    course_id=serializers.PrimaryKeyRelatedField(
+        queryset=Course.objects.all(),
+        write_only=True,
+        required=True,
+        source='course',
+        error_messages={
+            'does_not_exist': 'Course dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Course ID harus berupa angka',
+            'required': 'Field Course harus diisi!'})
     
-    course=serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
-    course_info=CourseSerializer(source="course", read_only=True)
+    building=BuildingSerializer(read_only=True)
+    building_id=serializers.PrimaryKeyRelatedField(
+        queryset=Building.objects.all(),
+        write_only=True,
+        required=True,
+        source='building',
+        error_messages={
+            'does_not_exist': 'Building dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Building ID harus berupa angka',
+            'required': 'Field building_id harus diisi!'}
+    )
     
-    building=serializers.PrimaryKeyRelatedField(queryset=Building.objects.all())
-    building_info=BuildingSerializer(source='building', read_only=True)
+    room=RoomSerializer(read_only=True)
+    room_id=serializers.PrimaryKeyRelatedField(
+        queryset=Room.objects.all(),
+        write_only=True,
+        required=True,
+        source='room',
+        error_messages={
+            'does_not_exist': 'Room dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Room ID harus berupa angka',
+            'required': 'Field Room harus diisi!'})
     
-    room=serializers.PrimaryKeyRelatedField(queryset=Room.objects.all())
-    room_info=RoomSerializer(source='room', read_only=True)
-    
-    teaching_staff=serializers.PrimaryKeyRelatedField(queryset=TeachingStaff.objects.all())
-    teaching_staff_info=TeachingStaffSerializer_Get(source='teaching_staff', read_only=True)
+    teaching_staff=TeachingStaffSerializer_Get(read_only=True)
+    teaching_staff_id=serializers.PrimaryKeyRelatedField(
+        queryset=TeachingStaff.objects.all(), 
+        write_only=True,
+        required=True,
+        source='teaching_staff',
+        error_messages={
+            'does_not_exist': 'Teaching Staff dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Teaching Staff ID harus berupa angka',
+            'required': 'Field Teaching Staff harus diisi!'})
     
     class Meta:
         model = Schedule
@@ -34,8 +75,13 @@ class ScheduleSerializer(serializers.ModelSerializer):
         read_only_fields = ['remaining_quota', 'registered_quota']
 
     def validate(self, data):
-        if 'remaining_quota' in data and data['remaining_quota'] <= 0:
-            raise serializers.ValidationError({"remaining_quota": "Quota is full."})
+        room = data.get('room')
+        building = data.get('building')
+        
+        if room and building and room.building != building:
+            raise serializers.ValidationError({
+                'room_id': 'Ruangan tidak berada di gedung yang dipilih'
+            })
         return data
     
     def validate_max_quota(self, value):
@@ -45,6 +91,13 @@ class ScheduleSerializer(serializers.ModelSerializer):
                 f"Max quota ({value}) cannot be less than the number of registered students ({instance.registered_quota})."
             )
         return value
+    
+    def validate_remaining_quota(self, value):
+        if 'remaining_quota' in value and value['remaining_quota'] <= 0:
+            raise serializers.ValidationError({"remaining_quota": "Quota is full."})
+        return value
+    
+    # coba buat seolah room bergantung dari building yang dipilih
     
     def update(self, instance, validated_data):
         max_quota=validated_data.get('max_quota', instance.max_quota)
