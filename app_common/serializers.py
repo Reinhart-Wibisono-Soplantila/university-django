@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Term, Grade, Status, Faculty, Department, EducationLevel, AcademicProgram
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,6 +44,7 @@ class TermSerializers(serializers.ModelSerializer):
             Term.objects.filter(is_active=1).update(is_active=False)
         return super().create(validated_data)
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         year_start = validated_data.get('year_start', instance.year_start)
         semester = validated_data.get('semester', instance.semester)
@@ -59,13 +61,9 @@ class TermSerializers(serializers.ModelSerializer):
                 if not Term.objects.exclude(id=instance.id).filter(is_active=1).exists():
                     raise serializers.ValidationError("There must be one active term.")
             
-        instance.term_code = new_term_code
-        instance.year_start = year_start
-        instance.year_end = year_start + 1
-        instance.semester = semester
-        instance.is_active = is_active
-        instance.save()
-        return instance
+        validated_data["term_code"] = new_term_code
+        validated_data["year_end"] = year_start + 1
+        return super().update(instance, validated_data)
 
 class StatusSerializers(serializers.ModelSerializer):
     class Meta:
@@ -83,21 +81,21 @@ class FacultySerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):
-    faculty_id=serializers.IntegerField(
+    faculty_id=serializers.PrimaryKeyRelatedField(
+        queryset=Faculty.objects.all(),
         write_only=True,
         required=True,
-        allow_null=False,
+        source='faculty',
+        error_messages={
+            'does_not_exist': 'Faculty dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Faculty ID harus berupa angka',
+            'required': 'Field Faculty harus diisi!'}
     )
     faculty= FacultySerializer(read_only=True)
     
     class Meta:
         model=Department
         fields='__all__'
-    
-    def validate_faculty_id(self, value):
-        if not Faculty.objects.filter(id=value).exists():
-            raise serializers.ValidationError({"Faculty dengan ID ini tidak valid"})
-        return value
     
     def _generate_department_code(self, faculty):
         faculty_code=faculty.faculty_code
@@ -111,21 +109,14 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return department_code
     
     def create(self, validated_data):
-        faculty_id=validated_data.pop("faculty_id", None)
-        if faculty_id is None:
-            raise serializers.ValidationError({"Field ini wajib di isi."})
-        faculty = get_object_or_404(Faculty, id=faculty_id)
-        validated_data["faculty"]=faculty
+        faculty=validated_data['faculty']
         validated_data['department_code']=self._generate_department_code(faculty)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        if 'faculty_id' in validated_data:
-            faculty_id=validated_data.pop('faculty_id', None)
-            if faculty_id is not None and faculty_id!=instance.faculty.id:
-                faculty = get_object_or_404(Faculty, id=faculty_id)
-                validated_data['department_code']=self._generate_department_code(faculty)
-                validated_data["faculty"]=faculty
+        if 'faculty' in validated_data and instance.faculty != validated_data['faculty']:
+            faculty=validated_data['faculty']
+            validated_data['department_code']=self._generate_department_code(faculty)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
@@ -137,16 +128,27 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return rep
 
 class AcademicProgramSerializer(serializers.ModelSerializer):
-    faculty_id=serializers.IntegerField(
+    faculty_id=serializers.PrimaryKeyRelatedField(
+        queryset=Faculty.objects.all(),
         write_only=True,
-        required=True
+        required=True,
+        source='faculty',
+        error_messages={
+            'does_not_exist': 'Faculty dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Faculty ID harus berupa angka',
+            'required': 'Field Faculty harus diisi!'}
     )
     faculty=FacultySerializer(read_only=True)
     
-    education_level_id=serializers.IntegerField(
+    education_level_id=serializers.PrimaryKeyRelatedField(
+        queryset=EducationLevel.objects.all(),
         write_only=True,
-        required=True,
-        allow_null=False
+        required=True, 
+        source='education_level',
+        error_messages={
+            'does_not_exist': 'Education Level dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Education Level ID harus berupa angka',
+            'required': 'Field Education Level harus diisi!'}
     )
     education_level=EducationLevelSerializer(read_only=True)
     
@@ -159,45 +161,21 @@ class AcademicProgramSerializer(serializers.ModelSerializer):
         last_program=AcademicProgram.objects.filter(faculty=faculty, education_level=education_level).order_by('-academic_program_code').first()
         new_number = int(last_program.academic_program_code[-3:])+1 if last_program else 1
         level_abr=education_level.abbreviation
-        level_code={'S1':1, 'S2':2, 'S3':3, 'S4':4}
-        education_level_code=level_code.get(level_abr, 1)
+        education_level_code=level_abr[1]
         return f"{faculty_code}1{education_level_code:02d}1{new_number:03d}"
     
-    def validate_faculty_id(self, value):
-        if not Faculty.objects.filter(id=value).exists():
-            raise serializers.ValidationError({"Faculty dengan ID ini tidak valid"})
-        return value
-    
-    def validate_education_level_id(self, value):
-        if not EducationLevel.objects.filter(id=value).exists():
-            raise serializers.ValidationError({"Education Level dengan ID ini tidak valid"})
-        return value
-    
     def create(self, validated_data):
-        faculty_id=validated_data.pop('faculty_id')
-        education_level_id=validated_data.pop("education_level_id")
-        
-        faculty=get_object_or_404(Faculty, id=faculty_id)
-        education_level=get_object_or_404(EducationLevel, id=education_level_id)
-        
+        faculty=validated_data['faculty']
+        education_level=validated_data["education_level"]
         validated_data['academic_program_code']=self._generate_program_code(faculty, education_level)
-        validated_data["faculty"]=faculty
-        validated_data["education_level"]=education_level
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty_id=validated_data.pop('faculty_id', None)
-        education_level_id=validated_data.pop('education_level_id', None)
-        
-        if faculty_id is not None and faculty_id != instance.faculty.id:
-            faculty=get_object_or_404( Faculty, id=faculty_id,)
-            validated_data["faculty"] = faculty
-                    
-        if education_level_id is not None and education_level_id != instance.education_level.id:    
-            education_level=get_object_or_404(EducationLevel, id=education_level_id)
-            validated_data["education_level"]= education_level
-        
-        if "faculty_id" in validated_data or "education_level_id" in validated_data:
+        faculty_changed= 'faculty' in validated_data and validated_data['faculty'] != instance.faculty
+        education_level_changed= 'education_level' in validated_data and validated_data['education_level'] != instance.education_level
+        if faculty_changed or education_level_changed:
+            faculty=validated_data.get('faculty', instance.faculty)
+            education_level=validated_data.get('education_level', instance.education_level)
             validated_data['academic_program_code']=self._generate_program_code(faculty, education_level)
         return super().update(instance, validated_data)
     

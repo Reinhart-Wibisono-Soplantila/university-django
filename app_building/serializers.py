@@ -11,6 +11,7 @@ class BuildingSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         allow_null=True,
+        source='faculty',
         error_messages={
         'does_not_exist': 'Faculty dengan ID {pk_value} tidak ditemukan',
         'incorrect_type': 'Faculty ID harus berupa angka'})
@@ -19,16 +20,6 @@ class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
         fields = '__all__'
-    
-    def create(self, validated_data):
-        faculty=validated_data.pop("faculty_id", None)
-        validated_data["faculty"]=faculty
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        faculty=validated_data.pop("faculty_id", None)
-        validated_data["faculty"] = faculty
-        return super().update(instance, validated_data)
     
     def to_representation(self, instance):
         rep=super().to_representation(instance)
@@ -44,6 +35,7 @@ class RoomSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
         allow_null=False,
+        source='building',
         error_messages={
             'does_not_exist': 'Building dengan ID {pk_value} tidak ditemukan',
             'incorrect_type': 'Building ID harus berupa angka',
@@ -55,22 +47,11 @@ class RoomSerializer(serializers.ModelSerializer):
         model=Room
         fields='__all__'
     
-    def create(self, validated_data):
-        building=validated_data.pop("building_id")
-        validated_data["building"]=building
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        if 'building_id' in validated_data:
-            building=validated_data.pop("building_id")
-            validated_data["building"]=building
-        return super().update(instance, validated_data)
-    
     def to_representation(self, instance):
         rep=super().to_representation(instance)
         if 'building' in rep:
             building_data=rep['building']
             building_data.pop('created_at', None)
             building_data.pop('updated_at', None)
-            building_data.pop('faculty', None)
+            building_data.pop('faculty', None)   #menghapus relasi building dan faculty dari tampilan response
         return rep 
