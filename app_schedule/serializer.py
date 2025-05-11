@@ -1,11 +1,33 @@
 from rest_framework import serializers
 from .models import Schedule, RegisteredSchedule
-from app_common.models import Term
+from app_common.models import Term, Department
+from app_course.models import Course
+from app_building.models import Building, Room
+from app_staff.models import TeachingStaff
+from app_common.serializers import DepartmentSerializer
+from app_course.serializers import CourseSerializer
+from app_building.serializers import BuildingSerializer, RoomSerializer
+from app_staff.serializers import TeachingStaffSerializer_Get
 from django.db import transaction
 
 class ScheduleSerializer(serializers.ModelSerializer):
     semester_pack_display = serializers.CharField(source='get_semester_pack_display', read_only=True)
-
+    
+    department=serializers.PrimaryKeyRelatedField(queryset=Department.objects.all())
+    department_info=DepartmentSerializer(source='department', read_only=True)
+    
+    course=serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+    course_info=CourseSerializer(source="course", read_only=True)
+    
+    building=serializers.PrimaryKeyRelatedField(queryset=Building.objects.all())
+    building_info=BuildingSerializer(source='building', read_only=True)
+    
+    room=serializers.PrimaryKeyRelatedField(queryset=Room.objects.all())
+    room_info=RoomSerializer(source='room', read_only=True)
+    
+    teaching_staff=serializers.PrimaryKeyRelatedField(queryset=TeachingStaff.objects.all())
+    teaching_staff_info=TeachingStaffSerializer_Get(source='teaching_staff', read_only=True)
+    
     class Meta:
         model = Schedule
         fields = '__all__'  

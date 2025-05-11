@@ -17,15 +17,18 @@ class CourseTypeApiView(APIView):
             keys.append(f"courseType_{coursetype_id}")
         cache.delete_many(keys)
         
+    def get_queryset(self):
+        return Course.objects.select_related('course_type', 'faculty', 'academic_program')
+        
     def get(self, request, coursetype_id=None):
         cache_key=f"courseType_{coursetype_id}" if coursetype_id else "courseType_All"
         data=cache.get(cache_key)
         if not data:
             if coursetype_id is not None:
-                coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
+                coursetype_obj=get_object_or_404(self.get_queryset(), id=coursetype_id)
                 serializer=CourseTypeSerializer(coursetype_obj)
             else:
-                coursetype_obj=CourseType.objects.all()
+                coursetype_obj=self.get_queryset().all()
                 serializer=CourseTypeSerializer(coursetype_obj, many=True)
             data=serializer.data
             cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
@@ -44,7 +47,7 @@ class CourseTypeApiView(APIView):
             raise ValidationError({error_clean})
         
     def put(self, request, coursetype_id):
-        coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
+        coursetype_obj=get_object_or_404(self.get_queryset(), id=coursetype_id)
         serializer=CourseTypeSerializer(coursetype_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -57,7 +60,7 @@ class CourseTypeApiView(APIView):
             raise ValidationError({error_clean})
         
     def patch(self, request, coursetype_id):
-        coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
+        coursetype_obj=get_object_or_404(self.get_queryset(), id=coursetype_id)
         serializer=CourseTypeSerializer(coursetype_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
@@ -70,7 +73,7 @@ class CourseTypeApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, coursetype_id):
-        coursetype_obj=get_object_or_404(CourseType, id=coursetype_id)
+        coursetype_obj=get_object_or_404(self.get_queryset(), id=coursetype_id)
         try:
             with transaction.atomic():
                 coursetype_obj.delete()
