@@ -6,34 +6,28 @@ from django.shortcuts import get_object_or_404
 
 # Gabungan untuk Read dan Write method
 class BuildingSerializer(serializers.ModelSerializer):
-    faculty_id = serializers.IntegerField(
+    faculty_id = serializers.PrimaryKeyRelatedField(
+        queryset=Faculty.objects.all(), 
         write_only=True,
         required=False,
         allow_null=True,
-    )
+        error_messages={
+        'does_not_exist': 'Faculty dengan ID {pk_value} tidak ditemukan',
+        'incorrect_type': 'Faculty ID harus berupa angka'})
     faculty = FacultySerializer(read_only=True)  # Untuk response
     
     class Meta:
         model = Building
         fields = '__all__'
-        
-    def validate_faculty_id(self, value):
-        if not Faculty.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Faculty dengan ID ini tidak valid")
-        return value
     
     def create(self, validated_data):
-        faculty_id=validated_data.pop("faculty_id", None)
-        if faculty_id is None:
-            raise serializers.ValidationError({"faculty_id": "Field ini wajib di isi."})
-        validated_data["faculty"]=get_object_or_404(Faculty, id=faculty_id)
+        faculty=validated_data.pop("faculty_id", None)
+        validated_data["faculty"]=faculty
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        faculty_id=validated_data.pop("faculty_id", None)
-        if faculty_id is not None and faculty_id != instance.faculty.id:
-            faculty=get_object_or_404(Faculty, id=faculty_id)
-            instance.faculty= faculty
+        faculty=validated_data.pop("faculty_id", None)
+        validated_data["faculty"] = faculty
         return super().update(instance, validated_data)
     
     def to_representation(self, instance):
@@ -45,33 +39,31 @@ class BuildingSerializer(serializers.ModelSerializer):
         return rep
     
 class RoomSerializer(serializers.ModelSerializer):
-    building_id=serializers.IntegerField(
+    building_id=serializers.PrimaryKeyRelatedField(
+        queryset=Building.objects.all(),
         write_only=True,
-        required=False,
-        allow_null=True,
+        required=True,
+        allow_null=False,
+        error_messages={
+            'does_not_exist': 'Building dengan ID {pk_value} tidak ditemukan',
+            'incorrect_type': 'Building ID harus berupa angka',
+            'required': 'Field building_id harus diisi!'}
     )
     building=BuildingSerializer(read_only=True)
+    
     class Meta:
         model=Room
         fields='__all__'
-        
-    def validate_building_id(self, value):
-        if not Building.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Building dengan Id ini tidak valid")
-        return value
     
     def create(self, validated_data):
-        building_id=validated_data.pop("building_id", None)
-        if building_id is None:
-            raise serializers.ValidationError({"building_id": "Field ini wajib diisi."})
-        validated_data["building"]=get_object_or_404(Building, id=building_id)
+        building=validated_data.pop("building_id")
+        validated_data["building"]=building
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        building_id=validated_data.pop("building_id", None)
-        if building_id is not None and building_id != instance.building.id:
-            building=get_object_or_404(Building, id=building_id)
-            instance.building= building
+        if 'building_id' in validated_data:
+            building=validated_data.pop("building_id")
+            validated_data["building"]=building
         return super().update(instance, validated_data)
     
     def to_representation(self, instance):
