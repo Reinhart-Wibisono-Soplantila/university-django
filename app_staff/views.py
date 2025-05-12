@@ -3,47 +3,79 @@ from rest_framework.views import APIView
 from university.response import *
 from .serializers import *
 from .models import *
+from django.core.cache import cache
+from django.db import transaction
 
 # Create your views here.
 class TeachingStaffApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    def get_queryset(self):
+        return TeachingStaff.objects.select_related(
+            'user', 
+            'position', 
+            'faculty', 
+            'department').prefetch_related(
+                'user__groups', 
+                'areas_of_expertise')
+    
+    @staticmethod
+    def clear_cache_teachingstaff(nip=None):
+        keys=["teachingstaff_all"]
+        if nip:
+            keys.append(f"teachingstaff_{nip}")
+        cache.delete_many(keys)
+    
     def get(self, request, nip=None):
-        if nip is not None:
-            teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
-            serializer=TeachingStaffSerializer_Get(teaching_obj)
-        else:
-            teaching_obj=TeachingStaff.objects.all()
-            serializer=TeachingStaffSerializer_Get(teaching_obj, many=True)
-        return success_response(serializer.data, message='success retrieve data')
+        cache_key=f"teachingstaff_{nip}"
+        cache.get(cache_key)
+        if not cache_key: 
+            if nip is not None:
+                teaching_obj=get_object_or_404(self.get_queryset(), nip=nip)
+                serializer=TeachingStaffSerializer_Get(teaching_obj)
+            else:
+                teaching_obj=self.get_queryset().all()
+                serializer=TeachingStaffSerializer_Get(teaching_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message='success retrieve data')
 
     def post(self, request):
         serializer=TeachingStaffSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success create data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_teachingstaff()
+                return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
         
     def patch(self, request, nip):
-        teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
+        teaching_obj=get_object_or_404(self.get_queryset(), nip=nip)
         serializer=TeachingStaffSerializer_Update(teaching_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                self.clear_cache_teachingstaff(nip)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
-        teaching_obj=get_object_or_404(TeachingStaff, nip=nip)
-        # teaching_obj.areas_of_expertise.clear()
-        teaching_obj.user.delete()
-        return delete_reponse()
-
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
+        teaching_obj=get_object_or_404(self.get_queryset(), nip=nip)
+        try:
+            with transaction.atomic():
+                self.clear_cache_teachingstaff(nip)
+                # teaching_obj.areas_of_expertise.clear()
+                teaching_obj.user.delete()
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
 class AdministrativeStaffApiView(APIView):
     def get(self, request, nip=None):
@@ -64,17 +96,6 @@ class AdministrativeStaffApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-    
-    # def put(self, request, nip):
-    #     administrative_obj=get_object_or_404(AdministrativeStaff, nip=nip)
-    #     serializer=AdminStaffSerializer_Update(administrative_obj, data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     try:
-    #         serializer.save()
-    #         return success_response(serializer.data, message="success update data")
-    #     except IntegrityError as e:
-    #         error_clean = str(e).replace('\n', ' ').replace('"', '')
-    #         raise ValidationError({error_clean})
         
     def patch(self, request, nip):
         administrative_obj=get_object_or_404(AdministrativeStaff, nip=nip)

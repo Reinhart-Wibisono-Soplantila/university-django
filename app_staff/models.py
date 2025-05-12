@@ -32,7 +32,6 @@ class SuperAdminStaff(models.Model):
     def __str__(self):
         return f"{self.nip}-{self.fullname}"
     
-
 class TeachingStaff(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE, related_name='teaching_staff')
     nip=models.CharField(max_length=30, db_index=True,unique=True)
