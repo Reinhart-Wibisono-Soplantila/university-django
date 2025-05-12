@@ -38,7 +38,7 @@ class GradeApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_grade_cache()
+                GradeApiView.clear_grade_cache()
                 return created_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -52,7 +52,7 @@ class GradeApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_grade_cache(grade_id)
+                GradeApiView.clear_grade_cache(grade_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -66,7 +66,7 @@ class GradeApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_grade_cache(grade_id)
+                GradeApiView.clear_grade_cache(grade_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -78,7 +78,7 @@ class GradeApiView(APIView):
         try:
             with transaction.atomic():
                 grade_obj.delete()
-                self.clear_grade_cache(grade_id)
+                GradeApiView.clear_grade_cache(grade_id)
                 return delete_reponse(grade_id)
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -115,7 +115,7 @@ class TermApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_term()
+                TermApiView.clear_cache_term()
                 return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -129,7 +129,7 @@ class TermApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_term(term_code)
+                TermApiView.clear_cache_term(term_code)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -143,7 +143,7 @@ class TermApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_term(term_code)
+                TermApiView.clear_cache_term(term_code)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -155,7 +155,7 @@ class TermApiView(APIView):
         try:
             with transaction.atomic():
                 term_obj.delete()
-                self.clear_cache_term(term_code)
+                TermApiView.clear_cache_term(term_code)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -192,7 +192,7 @@ class StatusApiView(APIView):
         try: 
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_status()
+                StatusApiView.clear_cache_status()
                 return created_response(serializer.data, message="success created data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -204,9 +204,9 @@ class StatusApiView(APIView):
         serializer=StatusSerializers(status_obj, data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            with transaction.atomic:
+            with transaction.atomic():
                 serializer.save()
-                self.clear_cache_status(status_id)
+                StatusApiView.clear_cache_status(status_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -220,19 +220,19 @@ class StatusApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_status(status_id)
+                StatusApiView.clear_cache_status(status_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
             
-    def delete(self, requqest, status_id):
+    def delete(self, request, status_id):
         status_obj=get_object_or_404(Status, id=status_id)
         try:
             with transaction.atomic():
                 status_obj.delete()
-                self.clear_cache_status(status_id)
+                StatusApiView.clear_cache_status(status_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -269,7 +269,7 @@ class FacultyApiView(APIView):
         try: 
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_faculty()
+                FacultyApiView.clear_cache_faculty()
                 return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -283,7 +283,7 @@ class FacultyApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_faculty(faculty_id)    
+                FacultyApiView.clear_cache_faculty(faculty_id)    
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -297,7 +297,7 @@ class FacultyApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_faculty(faculty_id)
+                FacultyApiView.clear_cache_faculty(faculty_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -310,7 +310,7 @@ class FacultyApiView(APIView):
             with transaction.atomic():
                 
                 faculty_obj.delete()
-                self.clear_cache_faculty(faculty_id)
+                FacultyApiView.clear_cache_faculty(faculty_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -351,7 +351,7 @@ class DepartmentApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_department()
+                DepartmentApiView.clear_cache_department()
                 return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -365,7 +365,7 @@ class DepartmentApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_department(department_id)
+                DepartmentApiView.clear_cache_department(department_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -379,7 +379,7 @@ class DepartmentApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_department(department_id)
+                DepartmentApiView.clear_cache_department(department_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -391,7 +391,7 @@ class DepartmentApiView(APIView):
         try:
             with transaction.atomic():
                 department_obj.delete()
-                self.clear_cache_department(department_id)
+                DepartmentApiView.clear_cache_department(department_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -428,7 +428,7 @@ class EducationLevelApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_edulevel()
+                EducationLevelApiView.clear_cache_edulevel()
                 return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -441,7 +441,7 @@ class EducationLevelApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_edulevel(edulevel_id)    
+                EducationLevelApiView.clear_cache_edulevel(edulevel_id)    
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -454,7 +454,7 @@ class EducationLevelApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_edulevel(edulevel_id)
+                EducationLevelApiView.clear_cache_edulevel(edulevel_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -465,7 +465,7 @@ class EducationLevelApiView(APIView):
         try:
             with transaction.atomic():
                 edulevel_obj.delete()
-                self.clear_cache_edulevel(edulevel_id)
+                EducationLevelApiView.clear_cache_edulevel(edulevel_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -504,7 +504,7 @@ class AcademicProgramApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_academicProgram()
+                AcademicProgramApiView.clear_cache_academicProgram()
                 return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -517,7 +517,7 @@ class AcademicProgramApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_academicProgram(program_id)
+                AcademicProgramApiView.clear_cache_academicProgram(program_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -530,7 +530,7 @@ class AcademicProgramApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_academicProgram(program_id)
+                AcademicProgramApiView.clear_cache_academicProgram(program_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -541,10 +541,8 @@ class AcademicProgramApiView(APIView):
         try:
             with transaction.atomic():
                 program_obj.delete()
-                self.clear_cache_academicProgram(program_id)
+                AcademicProgramApiView.clear_cache_academicProgram(program_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)

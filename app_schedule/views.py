@@ -46,7 +46,7 @@ class ScheduleApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_schedule()
+                ScheduleApiView.clear_cache_schedule()
                 return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             return Response(
@@ -60,7 +60,7 @@ class ScheduleApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_schedule(schedule_id)
+                ScheduleApiView.clear_cache_schedule(schedule_id)
                 return success_response(serializer.data, message='success udpate data')
         except IntegrityError as e:
             return ValidationError({"detail": "Integrity error: " + str(e)})
@@ -72,7 +72,7 @@ class ScheduleApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_schedule(schedule_id)
+                ScheduleApiView.clear_cache_schedule(schedule_id)
                 return success_response(serializer.data, message='success udpate data')
         except IntegrityError as e:
             return ValidationError({"detail": "Integrity error: " + str(e)})
@@ -82,7 +82,7 @@ class ScheduleApiView(APIView):
         try:
             with transaction.atomic():
                 schedule_obj.delete()
-                self.clear_cache_schedule(schedule_id)
+                ScheduleApiView.clear_cache_schedule(schedule_id)
                 return delete_reponse()
         except IntegrityError as e:
             return ValidationError({"detail": "Integrity error: " + str(e)})

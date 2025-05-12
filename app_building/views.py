@@ -40,7 +40,7 @@ class BuildingApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_building()
+                BuildingApiView.clear_cache_building()
                 return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -54,7 +54,7 @@ class BuildingApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_building(building_id)
+                BuildingApiView.clear_cache_building(building_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -68,7 +68,7 @@ class BuildingApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_building(building_id)
+                BuildingApiView.clear_cache_building(building_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -80,7 +80,7 @@ class BuildingApiView(APIView):
         try:
             with transaction.atomic():
                 building_obj.delete()
-                self.clear_cache_building(building_id)
+                BuildingApiView.clear_cache_building(building_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -120,7 +120,7 @@ class RoomApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_room()
+                RoomApiView.clear_cache_room()
                 return success_response(serializer.data, message='success create data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -134,7 +134,7 @@ class RoomApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_room(room_id)
+                RoomApiView.clear_cache_room(room_id)
                 return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -148,7 +148,7 @@ class RoomApiView(APIView):
         try:
             with transaction.atomic():
                 serializer.save()
-                self.clear_cache_room(room_id)
+                RoomApiView.clear_cache_room(room_id)
                 return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
@@ -160,7 +160,7 @@ class RoomApiView(APIView):
         try:
             with transaction.atomic():
                 room_obj.delete()
-                self.clear_cache_room(room_id)
+                RoomApiView.clear_cache_room(room_id)
                 return delete_reponse()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
