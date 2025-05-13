@@ -146,6 +146,7 @@ class SuperAdminStaffApiView(APIView):
     def get_queryset(self):
         return SuperAdminStaff.objects.prefetch_related('user', 'user__groups')
     
+    @staticmethod
     def clear_cache_superadmin(nip=None):
         keys=["superadmin_all"]
         if nip:
