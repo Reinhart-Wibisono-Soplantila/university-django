@@ -141,22 +141,39 @@ class AdministrativeStaffApiView(APIView):
             raise ValidationError({error_clean})
      
 class SuperAdminStaffApiView(APIView):
+    CACHE_TIMEOUT = 60*60
+    
+    def get_queryset(self):
+        return SuperAdminStaff.objects.prefetch_related('user', 'user__groups')
+    
+    def clear_cache_superadmin(nip=None):
+        keys=["superadmin_all"]
+        if nip:
+            keys.append(f"superadmin_{nip}")
+        cache.delete_many(keys)
+    
     def get(self, request, nip=None):
-        if nip is not None:
-            superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
-            serializer=SuperAdminSerializer_Get(superadmin_obj)
-        else:
-            superadmin_obj=SuperAdminStaff.objects.all()
-            serializer=SuperAdminSerializer_Get(superadmin_obj, many=True)
-        return success_response(serializer.data, message="success retrieve data")
+        cache_key=f"superadmin_{nip}" if nip else "superadmin_all"
+        data=cache.get(cache_key)
+        if not data:
+            if nip is not None:
+                superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+                serializer=SuperAdminSerializer_Get(superadmin_obj)
+            else:
+                superadmin_obj=SuperAdminStaff.objects.all()
+                serializer=SuperAdminSerializer_Get(superadmin_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
+        return success_response(data, message="success retrieve data")
     
     def post(self, request):
         serializer=SuperAdminSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            # response_serializer = SuperAdminSerializer_Detail(serializer)
-            return success_response(serializer.data, message="success create data")
+            with transaction.atomic():
+                serializer.save()
+                SuperAdminStaffApiView.clear_cache_superadmin()
+                return success_response(serializer.data, message="success create data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -166,19 +183,24 @@ class SuperAdminStaffApiView(APIView):
         serializer=SuperAdminSerializer_Update(superadmin_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message="success update data")
+            with transaction.atomic():
+                serializer.save()
+                SuperAdminStaffApiView.clear_cache_superadmin(nip)
+                return success_response(serializer.data, message="success update data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
         superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
-        superadmin_obj.user.delete()
-        return delete_reponse()
-
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
+        try:
+            with transaction.atomic():
+                superadmin_obj.user.delete()
+                SuperAdminStaffApiView.clear_cache_superadmin(nip)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
                 
 class ExpertiseApiView(APIView):
     def get(self, request, expertise_id=None):
