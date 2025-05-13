@@ -206,6 +206,7 @@ class SuperAdminStaffApiView(APIView):
 class ExpertiseApiView(APIView):
     CACHE_TIMEOUT=60*60
     
+    @staticmethod
     def clear_cache_AOE(expertise_id=None):
         keys=['AOE_all']
         if expertise_id:
@@ -246,7 +247,7 @@ class ExpertiseApiView(APIView):
             with transaction.atomic():
                 serializer.save()
                 ExpertiseApiView.clear_cache_AOE(expertise_id)
-                return created_response(serializer.data, message="success created data")
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
