@@ -158,7 +158,7 @@ class SuperAdminStaffApiView(APIView):
         data=cache.get(cache_key)
         if not data:
             if nip is not None:
-                superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+                superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
                 serializer=SuperAdminSerializer_Get(superadmin_obj)
             else:
                 superadmin_obj=SuperAdminStaff.objects.all()
@@ -180,7 +180,7 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
         
     def patch(self, request, nip):
-        superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+        superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
         serializer=SuperAdminSerializer_Update(superadmin_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
@@ -193,7 +193,7 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
-        superadmin_obj=get_object_or_404(SuperAdminStaff, nip=nip)
+        superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
         try:
             with transaction.atomic():
                 superadmin_obj.user.delete()
