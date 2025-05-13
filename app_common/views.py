@@ -79,7 +79,7 @@ class GradeApiView(APIView):
             with transaction.atomic():
                 grade_obj.delete()
                 GradeApiView.clear_grade_cache(grade_id)
-                return delete_reponse(grade_id)
+                return delete_response(grade_id)
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -156,7 +156,7 @@ class TermApiView(APIView):
             with transaction.atomic():
                 term_obj.delete()
                 TermApiView.clear_cache_term(term_code)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -233,7 +233,7 @@ class StatusApiView(APIView):
             with transaction.atomic():
                 status_obj.delete()
                 StatusApiView.clear_cache_status(status_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -311,7 +311,7 @@ class FacultyApiView(APIView):
                 
                 faculty_obj.delete()
                 FacultyApiView.clear_cache_faculty(faculty_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -392,7 +392,7 @@ class DepartmentApiView(APIView):
             with transaction.atomic():
                 department_obj.delete()
                 DepartmentApiView.clear_cache_department(department_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -466,7 +466,7 @@ class EducationLevelApiView(APIView):
             with transaction.atomic():
                 edulevel_obj.delete()
                 EducationLevelApiView.clear_cache_edulevel(edulevel_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -542,7 +542,7 @@ class AcademicProgramApiView(APIView):
             with transaction.atomic():
                 program_obj.delete()
                 AcademicProgramApiView.clear_cache_academicProgram(program_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})

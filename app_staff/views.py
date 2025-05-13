@@ -72,7 +72,7 @@ class TeachingStaffApiView(APIView):
                 self.clear_cache_teachingstaff(nip)
                 # teaching_obj.areas_of_expertise.clear()
                 teaching_obj.user.delete()
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -135,7 +135,7 @@ class AdministrativeStaffApiView(APIView):
             with transaction.atomic():
                 administrative_obj.user.delete()
                 AdministrativeStaffApiView.clear_cache_administaff(nip)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -197,7 +197,7 @@ class SuperAdminStaffApiView(APIView):
             with transaction.atomic():
                 superadmin_obj.user.delete()
                 SuperAdminStaffApiView.clear_cache_superadmin(nip)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -256,7 +256,7 @@ class ExpertiseApiView(APIView):
             with transaction.atomic():
                 ExpertiseApiView.clear_cache_AOE(expertise_id)
                 expertise_obj.delete()
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -308,17 +308,6 @@ class TeachingPositionApiView(APIView):
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
-        
-    # def patch(self, request, position_id):
-    #     position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
-    #     serializer=PositionTeachingSerializer(position_obj, partial=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     try:
-    #         serializer.save()
-    #         return success_response(serializer.data, message='success update data')
-    #     except IntegrityError as e:
-    #         error_clean = str(e).replace('\n', ' ').replace('"', '')
-            # raise ValidationError({error_clean})
     
     def delete(self, request, position_id):
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
@@ -326,7 +315,7 @@ class TeachingPositionApiView(APIView):
             with transaction.atomic():
                 position_obj.delete()
                 TeachingPositionApiView.clear_cache_position(position_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})

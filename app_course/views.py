@@ -78,7 +78,7 @@ class CourseTypeApiView(APIView):
             with transaction.atomic():
                 coursetype_obj.delete()
                 CourseTypeApiView.clear_cache_courseType(coursetype_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -154,7 +154,7 @@ class CourseApiView(APIView):
             with transaction.atomic():
                 course_obj.delete()
                 CourseApiView.clear_cache_course(course_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})

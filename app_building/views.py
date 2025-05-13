@@ -81,7 +81,7 @@ class BuildingApiView(APIView):
             with transaction.atomic():
                 building_obj.delete()
                 BuildingApiView.clear_cache_building(building_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -161,7 +161,7 @@ class RoomApiView(APIView):
             with transaction.atomic():
                 room_obj.delete()
                 RoomApiView.clear_cache_room(room_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})

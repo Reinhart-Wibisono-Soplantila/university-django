@@ -53,7 +53,7 @@ def created_response(serializer, message):
         "data":serializer
     }, status=status.HTTP_201_CREATED)
 
-def delete_reponse():
+def delete_response():
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 def error_400_response(serializer):

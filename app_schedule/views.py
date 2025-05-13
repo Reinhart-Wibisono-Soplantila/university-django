@@ -83,6 +83,6 @@ class ScheduleApiView(APIView):
             with transaction.atomic():
                 schedule_obj.delete()
                 ScheduleApiView.clear_cache_schedule(schedule_id)
-                return delete_reponse()
+                return delete_response()
         except IntegrityError as e:
             return ValidationError({"detail": "Integrity error: " + str(e)})
