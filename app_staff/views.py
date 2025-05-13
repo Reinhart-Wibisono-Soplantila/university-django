@@ -252,25 +252,46 @@ class ExpertiseApiView(APIView):
     
     def delete(self, request, expertise_id):
         expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
-        expertise_obj.delete()
-        return delete_reponse()
+        try:
+            with transaction.atomic():
+                ExpertiseApiView.clear_cache_AOE(expertise_id)
+                expertise_obj.delete()
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
     
 class TeachingPositionApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    def clear_cache_position(position_id):
+        keys=["position_all"]
+        if position_id:
+            keys.append(f"position_{position_id}")
+        cache.delete_many(keys)
+        
     def get(self, request, position_id=None):
-        if position_id is not None:
-            position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
-            serializer=PositionTeachingSerializer(position_obj)
-        else:
-            position_obj=PositionTeachingStaff.objects.all()
-            serializer=PositionTeachingSerializer(position_obj, many=True)
+        cache_key=f"position_{position_id}" if position_id else "position_all"
+        data=cache.get(cache_key)
+        if not data:
+            if position_id is not None:
+                position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
+                serializer=PositionTeachingSerializer(position_obj)
+            else:
+                position_obj=PositionTeachingStaff.objects.all()
+                serializer=PositionTeachingSerializer(position_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
         serializer=PositionTeachingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
-            serializer.save()
-            return created_response(serializer.data, message='success created data')
+            with transaction.atomic():
+                serializer.save()
+                TeachingPositionApiView.clear_cache_position()
+                return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -280,8 +301,10 @@ class TeachingPositionApiView(APIView):
         serializer=PositionTeachingSerializer(position_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return success_response(serializer.data, message='success update data')
+            with transaction.atomic():
+                serializer.save()
+                TeachingPositionApiView.clear_cache_position(position_id)
+                return success_response(serializer.data, message='success update data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -295,13 +318,16 @@ class TeachingPositionApiView(APIView):
     #         return success_response(serializer.data, message='success update data')
     #     except IntegrityError as e:
     #         error_clean = str(e).replace('\n', ' ').replace('"', '')
-            raise ValidationError({error_clean})
+            # raise ValidationError({error_clean})
     
     def delete(self, request, position_id):
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
-        position_obj.delete()
-        return delete_reponse()
-    
-    def options(self, request, *args, **kwargs):
-        return super().options(request, *args, **kwargs)
+        try:
+            with transaction.atomic():
+                position_obj.delete()
+                TeachingPositionApiView.clear_cache_position(position_id)
+                return delete_reponse()
+        except IntegrityError as e:
+            error_clean = str(e).replace('\n', ' ').replace('"', '')
+            raise ValidationError({error_clean})
         
