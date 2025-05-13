@@ -203,21 +203,36 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
                 
 class ExpertiseApiView(APIView):
+    CACHE_TIMEOUT=60*60
+    
+    def clear_cache_AOE(expertise_id=None):
+        keys=['AOE_all']
+        if expertise_id:
+            keys.append(f"AOE_{expertise_id}")
+        cache.delete_many(keys)
+        
     def get(self, request, expertise_id=None):
-        if expertise_id is not None:
-            expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
-            serializer=ExpertiseSerializer(expertise_obj)
-        else:
-            expertise_obj=AreaOfExpertise.objects.all()
-            serializer=ExpertiseSerializer(expertise_obj, many=True)
+        cache_key=f"AOE_{expertise_id}" if expertise_id else 'AOE_all'
+        data=cache.get(cache_key)
+        if not data:
+            if expertise_id is not None:
+                expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
+                serializer=ExpertiseSerializer(expertise_obj)
+            else:
+                expertise_obj=AreaOfExpertise.objects.all()
+                serializer=ExpertiseSerializer(expertise_obj, many=True)
+            data=serializer.data
+            cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
         return success_response(serializer.data, message="success retrieve data")
     
     def post(self, request):
         serializer=ExpertiseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return created_response(serializer.data, message='success created data')
+            with transaction.atomic():
+                serializer.save()
+                ExpertiseApiView.clear_cache_AOE()
+                return created_response(serializer.data, message='success created data')
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
@@ -227,8 +242,10 @@ class ExpertiseApiView(APIView):
         serializer=ExpertiseSerializer(expertise_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
-            return created_response(serializer.data, message="success created data")
+            with transaction.atomic():
+                serializer.save()
+                ExpertiseApiView.clear_cache_AOE(expertise_id)
+                return created_response(serializer.data, message="success created data")
         except IntegrityError as e:
             error_clean = str(e).replace('\n', ' ').replace('"', '')
             raise ValidationError({error_clean})
