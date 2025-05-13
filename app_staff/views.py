@@ -161,7 +161,7 @@ class SuperAdminStaffApiView(APIView):
                 superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
                 serializer=SuperAdminSerializer_Get(superadmin_obj)
             else:
-                superadmin_obj=SuperAdminStaff.objects.all()
+                superadmin_obj=self.get_queryset().all()
                 serializer=SuperAdminSerializer_Get(superadmin_obj, many=True)
             data=serializer.data
             cache.set(cache_key, data, timeout=self.CACHE_TIMEOUT)
