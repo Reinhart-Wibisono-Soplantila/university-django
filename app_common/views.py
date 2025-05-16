@@ -6,10 +6,14 @@ from .serializers import *
 from university.response import *
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
+from university.permissions import isAdmin
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class GradeApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_grade_cache(grade_id=None):
@@ -86,7 +90,8 @@ class GradeApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
     
 class TermApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_term(term_code=None):
@@ -163,7 +168,8 @@ class TermApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
     
 class StatusApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_status(status_id=None):
@@ -240,7 +246,8 @@ class StatusApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
  
 class FacultyApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_faculty(faculty_id=None):
@@ -318,7 +325,8 @@ class FacultyApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
                 
 class DepartmentApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_department(department_id=None):
@@ -399,7 +407,8 @@ class DepartmentApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
 
 class EducationLevelApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_edulevel(edulevel_id=None):
@@ -472,7 +481,8 @@ class EducationLevelApiView(APIView):
             raise ValidationError({error_clean})
         
 class AcademicProgramApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     def get_queryset(self):
         return AcademicProgram.objects.select_related("faculty", "education_level")
