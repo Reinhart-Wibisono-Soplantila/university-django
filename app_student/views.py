@@ -7,7 +7,6 @@ from university.response import *
 from dal import autocomplete
 from django.core.cache import cache
 from django.db import transaction
-from university.permissions import isAdmin, isStudent
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied

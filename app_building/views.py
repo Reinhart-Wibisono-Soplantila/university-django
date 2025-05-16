@@ -5,10 +5,14 @@ from .models import Building, Room
 from .serializers import *
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
+from university.permissions import isAdmin
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class BuildingApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT =getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_building(building_id=None):
@@ -88,7 +92,9 @@ class BuildingApiView(APIView):
             # raise ValidationError({"detail": "Data grade sudah ada atau melanggar constraint."})
     
 class RoomApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_room(room_id=None):

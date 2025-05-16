@@ -53,6 +53,7 @@ class StudentSerializer_Create(serializers.ModelSerializer):
 
 class StudentSerializer_Update(serializers.ModelSerializer):    
     user=UserSerializer()
+    date_birth = serializers.DateField(required=True)
     
     class Meta:
         model = Student
@@ -64,8 +65,8 @@ class StudentSerializer_Update(serializers.ModelSerializer):
         return attrs
     
     def update(self, instance, validated_data):
-        print("Validated Data:", validated_data)
         user_data=validated_data.pop('user', None)
+        print("Validated Data:", validated_data)
         try:
             with transaction.atomic():
                 for attr, value in validated_data.items():
