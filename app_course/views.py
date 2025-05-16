@@ -5,10 +5,14 @@ from .models import Course, CourseType
 from .serializers import CourseSerializer, CourseTypeSerializer
 from django.core.cache import cache
 from django.db import transaction
+from university.permissions import isAdminStaff, isAdmin 
+from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 
 # Create your views here.
 class CourseTypeApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdmin]
     
     @staticmethod
     def clear_cache_courseType(coursetype_id=None):
@@ -84,7 +88,8 @@ class CourseTypeApiView(APIView):
             raise ValidationError({error_clean})
 
 class CourseApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdminStaff]
     
     @staticmethod
     def clear_cache_course(course_id=None):
