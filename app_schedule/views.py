@@ -5,10 +5,14 @@ from .models import Schedule
 from university.response import *
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from university.permissions import isAdminStaff
 
 # Create your views here.
 class ScheduleApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated, isAdminStaff]
     
     def get_queryset(self):
         return Schedule.objects.select_related(
