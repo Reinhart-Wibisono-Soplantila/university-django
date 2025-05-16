@@ -56,6 +56,11 @@ def created_response(serializer, message):
 def delete_response():
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+def access_denied_response(message):
+    return Response({
+        "message":message
+    }, status=status.HTTP_403_FORBIDDEN)
+
 def error_400_response(serializer):
     return Response({
         "status_code": status.HTTP_400_BAD_REQUEST,
@@ -71,8 +76,7 @@ def error_400_integirty_response(message):
         "message": message,
         "errors":{"detail":[message]}
     }, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 # def internal_server_error_reponse(e):
 #     return Response({
 #         "status_code":status.HTTP_500_INTERNAL_SERVER_ERROR,

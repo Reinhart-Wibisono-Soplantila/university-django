@@ -17,6 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
 
 def custom_404_handler(request, exception):
     return JsonResponse({
@@ -28,6 +33,8 @@ def custom_404_handler(request, exception):
 handler404=custom_404_handler
 
 urlpatterns = [
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/', admin.site.urls),
     path('common/', include('app_common.urls', namespace='app_common')),
     path('building/', include('app_building.urls', namespace='app_building')),

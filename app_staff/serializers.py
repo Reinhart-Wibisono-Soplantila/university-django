@@ -56,8 +56,9 @@ class SuperAdminSerializer_Create(serializers.ModelSerializer):
                 group=Group.objects.get(name='Admin')
                 user.groups.add(group)
                 superadminstaff = SuperAdminStaff.objects.create(user=user, **validated_data)
-                user.username=superadminstaff.nim
-                user.set_password(superadminstaff.nim)
+                user.username=superadminstaff.nip
+                user.set_password(superadminstaff.nip)
+                user.save()
         except Exception as e:
             raise ValidationError(f"An error occurred while creating user: {str(e)}")
         return superadminstaff
