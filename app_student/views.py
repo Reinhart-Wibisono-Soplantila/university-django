@@ -16,11 +16,21 @@ class StudentAPIView(APIView):
     permission_classes=[IsAuthenticated]
     CACHE_TIMEOUT=getattr(settings, 'CACHE_TIMEOUT', 60*60)
     
+    @staticmethod
+    def _clear_cache_student(student_nim=None):
+        keys=['student_all']
+        if student_nim:
+            keys.append(f"student_{student_nim}")
+        cache.delete_many(keys)
+    
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
     def get_queryset(self):
         return Student.objects.select_related('faculty', 'department', 'status').prefetch_related('user', 'user__groups')
     
-    def _has_group(self, request, *groupNames):
-        user=request.user
+    def _has_group(self, user, *groupNames):
         return any(StudentAPIView._user_in_groups_queryset(user, group) for group in groupNames)
     
     def _permission_check(self, request, student_nim=None):
@@ -32,17 +42,6 @@ class StudentAPIView(APIView):
             return
         else:
             raise PermissionDenied('Access Denied')
-    
-    @staticmethod
-    def _user_in_groups_queryset(user, groupName):
-        return user.groups.filter(name=groupName).exists()
-    
-    @staticmethod
-    def _clear_cache_student(student_nim=None):
-        keys=['student_all']
-        if student_nim:
-            keys.append(f"student_{student_nim}")
-        cache.delete_many(keys)
     
     def get(self, request, student_nim=None):
         self._permission_check(request, student_nim)

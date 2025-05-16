@@ -5,11 +5,14 @@ from .serializers import *
 from .models import *
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 # Create your views here.
 class TeachingStaffApiView(APIView):
-    CACHE_TIMEOUT=60*60
-    
+    CACHE_TIMEOUT = getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
         return TeachingStaff.objects.select_related(
             'user', 
@@ -26,8 +29,26 @@ class TeachingStaffApiView(APIView):
             keys.append(f"teachingstaff_{nip}")
         cache.delete_many(keys)
     
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
+    def _has_group(self, user, *groupNames):
+        return any(TeachingStaffApiView._user_in_groups_queryset(user, group) for group in groupNames)
+        
+    def _permissions_check(self, request, nip=None):
+        user=request.user
+        if TeachingStaffApiView._user_in_groups_queryset(user, 'Teaching Staff'):
+            if nip != user.username or nip is None:
+                raise PermissionDenied('Access Denied')
+        elif self._has_group(user, 'Admin'):
+           pass
+        else:
+            raise PermissionDenied('Access Denied')
+    
     def get(self, request, nip=None):
-        cache_key=f"teachingstaff_{nip}"
+        self._permissions_check(request, nip)
+        cache_key=f"teachingstaff_{nip}" if nip else "teachingstaff_all"
         data = cache.get(cache_key)
         if not data: 
             if nip is not None:
@@ -41,6 +62,9 @@ class TeachingStaffApiView(APIView):
         return success_response(data, message='success retrieve data')
 
     def post(self, request):
+        user=request.user
+        if not TeachingStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         serializer=TeachingStaffSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -53,6 +77,7 @@ class TeachingStaffApiView(APIView):
             raise ValidationError({error_clean})
         
     def patch(self, request, nip):
+        self._permissions_check(request, nip)
         teaching_obj=get_object_or_404(self.get_queryset(), nip=nip)
         serializer=TeachingStaffSerializer_Update(teaching_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -66,6 +91,9 @@ class TeachingStaffApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
+        user=request.user
+        if not TeachingStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         teaching_obj=get_object_or_404(self.get_queryset(), nip=nip)
         try:
             with transaction.atomic():
