@@ -33,15 +33,12 @@ class TeachingStaffApiView(APIView):
     def _user_in_groups_queryset(user, groupName):
         return user.groups.filter(name=groupName).exists()
     
-    def _has_group(self, user, *groupNames):
-        return any(TeachingStaffApiView._user_in_groups_queryset(user, group) for group in groupNames)
-        
     def _permissions_check(self, request, nip=None):
         user=request.user
         if TeachingStaffApiView._user_in_groups_queryset(user, 'Teaching Staff'):
             if nip != user.username or nip is None:
                 raise PermissionDenied('Access Denied')
-        elif self._has_group(user, 'Admin'):
+        elif TeachingStaffApiView._user_in_groups_queryset(user, 'Admin'):
            pass
         else:
             raise PermissionDenied('Access Denied')
@@ -106,8 +103,22 @@ class TeachingStaffApiView(APIView):
             raise ValidationError({error_clean})
     
 class AdministrativeStaffApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT=getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated]
     
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
+    def _permission_check(self, request, nip= None):
+        user=request.user
+        if AdministrativeStaffApiView._user_in_groups_queryset(user, 'Administrative Staff'):
+            if nip is None and nip != user.username:
+                raise PermissionDenied('Access Denied')
+        elif AdministrativeStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            pass
+        else: raise PermissionDenied('Access Denied')
+        
     def get_queryset(self):
         return AdministrativeStaff.objects.select_related('user', 'faculty', 'department').prefetch_related('user__groups')
     
@@ -119,6 +130,7 @@ class AdministrativeStaffApiView(APIView):
         cache.delete_many(keys)
     
     def get(self, request, nip=None):
+        self._permission_check(request, nip)
         cache_key=f"adminstaff_{nip}" if nip else "adminstaff_all"
         data=cache.get(cache_key)
         if not data:
@@ -133,6 +145,9 @@ class AdministrativeStaffApiView(APIView):
         return success_response(data, message='success retrieve data')
 
     def post(self, request):
+        user=request.user
+        if not AdministrativeStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         serializer=AdminStaffSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -145,6 +160,7 @@ class AdministrativeStaffApiView(APIView):
             raise ValidationError({error_clean})
         
     def patch(self, request, nip):
+        self._permission_check(request, nip)
         administrative_obj=get_object_or_404(self.get_queryset(), nip=nip)
         serializer=AdminStaffSerializer_Update(administrative_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -158,6 +174,9 @@ class AdministrativeStaffApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
+        user=request.user
+        if not AdministrativeStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         administrative_obj=get_object_or_404(self.get_queryset(), nip=nip)
         try:
             with transaction.atomic():
@@ -169,7 +188,18 @@ class AdministrativeStaffApiView(APIView):
             raise ValidationError({error_clean})
      
 class SuperAdminStaffApiView(APIView):
-    CACHE_TIMEOUT = 60*60
+    CACHE_TIMEOUT=getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated]
+    
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
+    def _permission_check(self, request):
+        user=request.user
+        if AdministrativeStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            pass
+        else: raise PermissionDenied('Access Denied')
     
     def get_queryset(self):
         return SuperAdminStaff.objects.prefetch_related('user', 'user__groups')
@@ -182,6 +212,7 @@ class SuperAdminStaffApiView(APIView):
         cache.delete_many(keys)
     
     def get(self, request, nip=None):
+        self._permission_check(request, nip)
         cache_key=f"superadmin_{nip}" if nip else "superadmin_all"
         data=cache.get(cache_key)
         if not data:
@@ -196,6 +227,9 @@ class SuperAdminStaffApiView(APIView):
         return success_response(data, message="success retrieve data")
     
     def post(self, request):
+        user=request.user
+        if not SuperAdminStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         serializer=SuperAdminSerializer_Create(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -208,6 +242,7 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
         
     def patch(self, request, nip):
+        self._permission_check(request, nip)
         superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
         serializer=SuperAdminSerializer_Update(superadmin_obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -221,6 +256,9 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, nip):
+        user=request.user
+        if not SuperAdminStaffApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         superadmin_obj=get_object_or_404(self.get_queryset(), nip=nip)
         try:
             with transaction.atomic():
@@ -232,7 +270,18 @@ class SuperAdminStaffApiView(APIView):
             raise ValidationError({error_clean})
                 
 class ExpertiseApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT=getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated]
+    
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
+    def _permission_check(self, request):
+        user=request.user
+        if ExpertiseApiView._user_in_groups_queryset(user, 'Admin'):
+            pass
+        else: raise PermissionDenied('Access Denied')
     
     @staticmethod
     def clear_cache_AOE(expertise_id=None):
@@ -242,6 +291,7 @@ class ExpertiseApiView(APIView):
         cache.delete_many(keys)
         
     def get(self, request, expertise_id=None):
+        self._permission_check(request)
         cache_key=f"AOE_{expertise_id}" if expertise_id else 'AOE_all'
         data=cache.get(cache_key)
         if not data:
@@ -256,6 +306,9 @@ class ExpertiseApiView(APIView):
         return success_response(serializer.data, message="success retrieve data")
     
     def post(self, request):
+        user=request.user
+        if not ExpertiseApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         serializer=ExpertiseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -268,6 +321,7 @@ class ExpertiseApiView(APIView):
             raise ValidationError({error_clean})
     
     def put(self, request, expertise_id):
+        self._permission_check(request)
         expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
         serializer=ExpertiseSerializer(expertise_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -281,6 +335,9 @@ class ExpertiseApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, expertise_id):
+        user=request.user
+        if not ExpertiseApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         expertise_obj=get_object_or_404(AreaOfExpertise, id=expertise_id)
         try:
             with transaction.atomic():
@@ -292,7 +349,18 @@ class ExpertiseApiView(APIView):
             raise ValidationError({error_clean})
     
 class TeachingPositionApiView(APIView):
-    CACHE_TIMEOUT=60*60
+    CACHE_TIMEOUT=getattr(settings, 'CACHE_TIMEOUT', 60*60)
+    permission_classes=[IsAuthenticated]
+    
+    @staticmethod
+    def _user_in_groups_queryset(user, groupName):
+        return user.groups.filter(name=groupName).exists()
+    
+    def _permission_check(self, request):
+        user=request.user
+        if ExpertiseApiView._user_in_groups_queryset(user, 'Admin'):
+            pass
+        else: raise PermissionDenied('Access Denied')
     
     def clear_cache_position(position_id):
         keys=["position_all"]
@@ -301,6 +369,7 @@ class TeachingPositionApiView(APIView):
         cache.delete_many(keys)
         
     def get(self, request, position_id=None):
+        self._permission_check(request)
         cache_key=f"position_{position_id}" if position_id else "position_all"
         data=cache.get(cache_key)
         if not data:
@@ -315,6 +384,9 @@ class TeachingPositionApiView(APIView):
         return success_response(serializer.data, message='success retrieve data')
     
     def post(self, request):
+        user=request.user
+        if not TeachingPositionApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         serializer=PositionTeachingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True) 
         try:
@@ -327,6 +399,7 @@ class TeachingPositionApiView(APIView):
             raise ValidationError({error_clean})
         
     def put(self, request, position_id):
+        self._permission_check(request)
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
         serializer=PositionTeachingSerializer(position_obj, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -340,6 +413,9 @@ class TeachingPositionApiView(APIView):
             raise ValidationError({error_clean})
     
     def delete(self, request, position_id):
+        user=request.user
+        if not TeachingPositionApiView._user_in_groups_queryset(user, 'Admin'):
+            raise PermissionDenied('Access Denied')
         position_obj=get_object_or_404(PositionTeachingStaff, id=position_id)
         try:
             with transaction.atomic():
